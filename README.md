@@ -1,2 +1,2 @@
-# MSc-files
-Files to support using tools developed for my MSc research
+# Supplementary material for Regional-Scale High-Resolution Permafrost Mapping by Scalable Machine Learning
+
