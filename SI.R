@@ -1,5 +1,7 @@
 # Supplementary information for paper 'Regional-Scale High-Resolution Permafrost Mapping by Scalable Machine Learning'
 
+# The code contained here should allow you to reproduce our workflow
+
 # Model parametrization and sample size selection ###################
 
 # Find the 10 models most similar to ranger (11 because one of these is not able to run)
@@ -29,8 +31,10 @@ features <- c(
   slope = terra::rast("path/SlopeDeg.tif"),
   veg = vegetation
 )
-outcome <- terra::vect("path/Tetra_pmfst.shp")[, 2]
+outcome <- terra::vect("path/Tetra_pmfst.shp")
 outcome$Type <- as.factor(outcome$Type)
+# Retain only the column with the class labels, drop the rest
+outcome <- outcome[, "Type"]
 
 trainControl <- caret::trainControl(
   method = "repeatedcv",
@@ -114,9 +118,7 @@ features <- c(
   veg = terra::rast("path/vegetation_resampled.tif")
 )
 
-outcome <- terra::vect(
-  "data/permafrost/training/MineSitePermafrost_TetraTech_20170224.dbf"
-)
+outcome <- terra::vect("path/Tetra_pmfst.shp")
 outcome$Type <- as.factor(outcome$Type)
 # Retain only the column with the class labels, drop the rest
 outcome <- outcome[, "Type"]
@@ -406,7 +408,7 @@ for (v in vars) {
   }
 }
 
-# Adding a legend to empty panel (assuming the last panel is empty)
+# Adding a legend to empty panel (assuming the last panel is empty - this won't hold if you are plotting other variables!)
 # Empty panel for legend
 graphics::plot.new()
 
@@ -455,9 +457,9 @@ features <- terra::aggregate(
 )
 
 # Get a vector of the coffee creek region
-PermMap <- terra::vect(
-  "data/permafrost/training/MineSitePermafrost_TetraTech_20170224.dbf"
-)
+PermMap <- terra::vect("path/Tetra_pmfst.shp")
+PermMap$Type <- as.factor(outcome$Type)
+# Retain only the column with the class labels, drop the rest
 PermMap <- PermMap[, "Type"]
 PermMap <- terra::project(PermMap, features) # ensure the crs is the same)
 
@@ -488,7 +490,7 @@ features_stack <- raster::stack(terra::subset(
     "DirectSolarRad"
   )
 ))
-# Expect warnings aabout 'no non-missing arguments' because of NA values
+# Expect warnings about 'no non-missing arguments' because of NA values
 dismo <- dismo::mess(features_stack, predvals_coffee[, c(3:9)]) # Leave out x and y columns
 
 # Save dismo as a raster
@@ -576,3 +578,5 @@ mtext(
 )
 
 dev.off()
+
+# Heads up: the plot was written to your working directory, or to whatever you specified in the call to png()!
