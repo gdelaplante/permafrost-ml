@@ -1,18 +1,16 @@
 # Supplementary information for paper 'Regional-Scale High-Resolution Permafrost Mapping by Scalable Machine Learning'
 
-# The code contained here should allow you to reproduce our workflow
 
 # Model parametrization and sample size selection ###################
+
 
 # Find the 10 models most similar to ranger (11 because one of these is not able to run)
 models <- SAiVE::modelMatch("ranger", similarity = 0.7)
 # Order the result, select top 10
-models <- models[
-  order(models$`Similarity to Random Forest (ranger)`, decreasing = TRUE),
-][1:11, ]
+models <- models[order(models$`Similarity to Random Forest (ranger)`, decreasing = TRUE), ][1:11,]
 
 # Resample vegetation raster to the same resolution and extent as other layers
-vegetation <- terra::rast("path/CAN_NALCMS_landcover_2020_30m.tif")
+vegetation <- terra::rast("path/CAN_NALCMS_landcover_2020_30m.tif") 
 DEM <- terra::rast("path/DEM.tif")
 terra::crs(vegetation) <- DEM # Assign the same crs as other layers
 
@@ -21,62 +19,53 @@ vegetation <- terra::resample(vegetation, Elevation, method = "near") # resample
 # vegetation <- terra::rast("path/vegetation_resampled.tif")
 
 # Load the predictor and outcome variables, make trainControl
-features <- c(
-  aspect = terra::rast("path/Aspect.tif"),
-  DEM = DEM,
-  difrad = terra::rast("path/DiffuseRad.tif"),
-  dirrad = terra::rast("path/DirectRad.tif"),
-  profcurv = terra::rast("path/ProfileCurv.tif"),
-  tancurv = terra::rast("path/TangentCurv.tif.tif"),
-  slope = terra::rast("path/SlopeDeg.tif"),
-  veg = vegetation
-)
-outcome <- terra::vect("path/Tetra_pmfst.shp")
+features <- c(aspect = terra::rast("path/Aspect.tif"),
+              DEM = DEM,
+              difrad = terra::rast("path/DiffuseRad.tif"),
+              dirrad = terra::rast("path/DirectRad.tif"),
+              profcurv = terra::rast("path/ProfileCurv.tif"),
+              tancurv = terra::rast("path/TangentCurv.tif.tif"),
+              slope = terra::rast("path/SlopeDeg.tif"),
+              veg = vegetation)
+outcome <- terra::vect("path/Tetra_pmfst.shp")[,2]
 outcome$Type <- as.factor(outcome$Type)
-# Retain only the column with the class labels, drop the rest
-outcome <- outcome[, "Type"]
 
 trainControl <- caret::trainControl(
   method = "repeatedcv",
   number = 10, # 10-fold Cross-validation
   repeats = 10, # repeated ten times
-  verboseIter = FALSE,
+  verboseIter = FALSE ,
   returnResamp = "final",
   savePredictions = "all",
-  allowParallel = TRUE
-)
+  allowParallel = TRUE)
 
 # Run spatPredict using the 10 models to find the best one
-res <- SAiVE::spatPredict(
-  features,
-  outcome,
-  10000, # 10 000 sample points just to find the best performing method
-  trainControl = trainControl, # Same trainControl for all models (otherwise matched one to one)
-  methods = models$`Model Abbreviation`,
-  predict = FALSE, # Don't bother predicting across the whole raster for now
-  fastCompare = FALSE, # We don't want to reduce the training set size further
-  thinFeatures = FALSE # Don't attempt to trim features with VSURF (already trimmed, and just tries to leave everything in anyways)
-)
+res <- SAiVE::spatPredict(features, 
+                   outcome, 
+                   10000, # 10 000 sample points just to find the best performing method
+                   trainControl = trainControl, # Same trainControl for all models (otherwise matched one to one)
+                   methods = models$`Model Abbreviation`, 
+                   predict = FALSE, # Don't bother predicting across the whole raster for now
+                   fastCompare = FALSE, # We don't want to reduce the training set size further
+                   thinFeatures = FALSE # Don't attempt to trim features with VSURF (already trimmed, and just tries to leave everything in anyways)
+                   )
 # Accuracy vs sample size
 test <- list()
-samp <- c(
-  thousand = 1000,
-  twothousand = 2000,
-  fourthousand = 4000,
-  sixthousand = 6000,
-  eightthousand = 8000
-  # ... and so on
-)
+samp <- c(thousand = 1000,
+          twothousand = 2000,
+          fourthousand = 4000, 
+         sixthousand = 6000, 
+         eightthousand = 8000
+        # ... and so on
+        )
 
 for (i in 1:length(samp)) {
-  test[[names(samp[i])]] <- SAiVE::spatPredict(
-    features,
-    outcome,
-    samp[i],
-    trainControl = trainControl,
-    methods = res$selected_method, # Only use best performing model from previous step
-    thinFeatures = FALSE
-  )
+  test[[names(samp[i])]] <- SAiVE::spatPredict(features, 
+                                        outcome, 
+                                        samp[i], 
+                                        trainControl = trainControl, 
+                                        methods = res$selected_method, # Only use best performing model from previous step
+                                        thinFeatures = FALSE)
 }
 
 # Save the output in case anything goes wrong… the previous step is very long
@@ -85,16 +74,14 @@ save(test, file = "path.Rdata")
 # Reload
 # load("path.Rdata")
 
-df <- data.frame(
-  points = samp,
-  accuracy = c(
-    test$thousand$selected_model_performance$overall[1],
-    test$twothousand$selected_model_performance$overall[1],
-    test$fourthousand$selected_model_performance$overall[1],
-    test$sixthousand$selected_model_performance$overall[1],
-    test$eightthousand$selected_model_performance$overall[1]
-    # … and so on
-  )
+df <- data.frame(points = samp,
+                              accuracy = c(test$thousand$selected_model_performance$overall[1],
+                              test$twothousand$selected_model_performance$overall[1],
+                              test$fourthousand$selected_model_performance$overall[1],
+                              test$sixthousand$selected_model_performance$overall[1],
+                              test$eightthousand$selected_model_performance$overall[1]
+                              # … and so on
+                              )
 )
 
 # Plot the result
@@ -104,21 +91,20 @@ ggplot2::ggplot(df, ggplot2::aes(x = points, y = accuracy)) +
   ggplot2::geom_smooth(method = "loess")
 
 
+
 # Training and applying the model ###################
 
 # Load the predictor and outcome variables
-features <- c(
-  aspect = terra::rast("path/Aspect.tif"),
-  DEM = terra::rast("path/DEM.tif"),
-  difrad = terra::rast("path/DiffuseRad.tif"),
-  dirrad = terra::rast("path/DirectRad.tif"),
-  profcurv = terra::rast("path/FocalStatProfileCurv.tif"),
-  tancurv = terra::rast("path/FocalStatTangentCurv.tif"),
-  slope = terra::rast("path/SlopeDeg.tif"),
-  veg = terra::rast("path/vegetation_resampled.tif")
-)
+features <- c(aspect = terra::rast("path/Aspect.tif"),
+              DEM = terra::rast("path/DEM.tif"),
+              difrad = terra::rast("path/DiffuseRad.tif"),
+              dirrad = terra::rast("path/DirectRad.tif"),
+              profcurv = terra::rast("path/FocalStatProfileCurv.tif"),
+              tancurv = terra::rast("path/FocalStatTangentCurv.tif"),
+              slope = terra::rast("path/SlopeDeg.tif"),
+              veg = terra::rast("path/vegetation_resampled.tif"))
 
-outcome <- terra::vect("path/Tetra_pmfst.shp")
+outcome <- terra::vect("data/permafrost/training/MineSitePermafrost_TetraTech_20170224.dbf")
 outcome$Type <- as.factor(outcome$Type)
 # Retain only the column with the class labels, drop the rest
 outcome <- outcome[, "Type"]
@@ -128,23 +114,21 @@ trainControl <- caret::trainControl(
   method = "repeatedcv",
   number = 10, # 10-fold Cross-validation
   repeats = 10, # repeated ten times
-  verboseIter = FALSE,
+  verboseIter = FALSE ,
   returnResamp = "final",
   savePredictions = "all",
-  allowParallel = TRUE
-)
+  allowParallel = TRUE)
 
 # Run spatPredict to get a quick model used for making PDP plots
-res <- SAiVE::spatPredict(
-  features, # predictor variables as a list of terra::spatRasters
-  outcome, # outcome variable as a terra::vect with the class labels as a factor
-  10000, # 10 000 sample points for a quick but reasonably accurate run; we ended up with 80 000 for the best performing model
-  trainControl = trainControl, # Same trainControl for all methods (otherwise matched one to one)
-  methods = "ranger", # The best performing methods from an iterative run with 10 methods
-  predict = FALSE, # Don't predict across the whole raster for now
-  fastCompare = FALSE, # We don't want to reduce the training set size further (and no comparison between methods is being done anyways)
-  thinFeatures = FALSE # Don't attempt to trim features with VSURF (already trimmed)
-)
+res <- SAiVE::spatPredict(features, # predictor variables as a list of terra::spatRasters
+                   outcome, # outcome variable as a terra::vect with the class labels as a factor
+                   10000, # 10 000 sample points for a quick but reasonably accurate run; we ended up with 80 000 for the best performing model
+                   trainControl = trainControl, # Same trainControl for all methods (otherwise matched one to one)
+                   methods = "ranger", # The best performing methods from an iterative run with 10 methods
+                   predict = FALSE, # Don't predict across the whole raster for now
+                   fastCompare = FALSE, # We don't want to reduce the training set size further (and no comparison between methods is being done anyways)
+                   thinFeatures = FALSE # Don't attempt to trim features with VSURF (already trimmed)
+                   )
 # > names(res)
 # [1] "training" "testing" "selected_method" "best_model" "selected_model_performance"
 # Training = the training data used to train the model as a spatVector
@@ -153,21 +137,19 @@ res <- SAiVE::spatPredict(
 # best_model = the best performing model as a caret 'train' object
 # selected_model_performance = the performance of the best model on the testing data as a list
 
+
 # To predict across the whole raster, use:
 features <- terra::rast(features) # make sure features is a SpatRaster, not a list of SpatRasters
-prediction <- terra::predict(
-  object = features,
-  model = res$best_model,
-  na.rm = TRUE,
-  progress = "text",
-  filename = "output_file.tif",
-  overwrite = TRUE,
-  cores = 8
-)
+prediction <- terra::predict(object = features, 
+                model = res$best_model, na.rm = TRUE, progress = "text", 
+                filename = "output_file.tif", overwrite = TRUE, cores = 8)
+
+
+
 
 
 # Comparison of model output to Casino Mining Project map ##################
-# This script was used to compare the model output to the Casino Mining Project's map.
+# This script was used to compare the model output to the Casino Mining Project's map. 
 # To replicate, replace the paths in the script with the appropriate paths on your system.
 
 casino <- terra::vect("path_to_casino_map.shp")
@@ -196,12 +178,11 @@ model_bin <- terra::classify(model, tbl)
 # Determine the agreement between the model and the casino_rast data
 agreement <- model_bin == casino_rast
 # Find the percentage of cells that agree
-agreement_perc <- sum(values(agreement), na.rm = TRUE) /
-  terra::ncell(agreement) *
-  100
+agreement_perc <- sum(values(agreement), na.rm = TRUE) / terra::ncell(agreement) * 100
 
 # Print the agreement percentage
 agreement_perc
+
 
 
 # Creating PDP plots ##############
@@ -214,7 +195,8 @@ response_col <- "Type"
 
 train_y <- factor(make.names(as.character(training_df[[response_col]])))
 
-train_x <- training_df[,
+train_x <- training_df[
+  ,
   setdiff(names(training_df), response_col),
   drop = FALSE
 ]
@@ -243,6 +225,7 @@ pdp_list <- list()
 i <- 1L
 
 for (pdp_var in pdp_vars) {
+
   x <- train_x[[pdp_var]]
 
   if (is.numeric(x)) {
@@ -258,6 +241,7 @@ for (pdp_var in pdp_vars) {
   }
 
   for (pdp_value in pdp_grid) {
+
     newdata <- train_x
 
     if (is.factor(x)) {
@@ -287,6 +271,7 @@ for (pdp_var in pdp_vars) {
 }
 
 pdp_df <- do.call(rbind, pdp_list)
+
 
 
 # Check that things are as expected
@@ -327,6 +312,7 @@ panel_labels <- LETTERS[seq_along(vars)]
 panel_i <- 1L
 
 for (v in vars) {
+
   d <- pdp_df[pdp_df$predictor == v, ]
 
   # detect numeric vs categorical
@@ -359,6 +345,7 @@ for (v in vars) {
   }
 
   for (cl in classes) {
+
     dc <- d[d$class == cl, ]
 
     if (is_num) {
@@ -378,28 +365,28 @@ for (v in vars) {
   }
 
   graphics::mtext(
-    panel_labels[panel_i],
-    side = 3, # top
-    adj = 0, # left align
-    line = 0.2, # distance from plot edge (smaller = closer)
-    cex = 2, # size of the label
-    font = 2 # bold
-  )
+  panel_labels[panel_i],
+  side = 3,      # top
+  adj = 0,       # left align
+  line = 0.2,    # distance from plot edge (smaller = closer)
+  cex = 2,       # size of the label
+  font = 2       # bold
+)
   panel_i <- panel_i + 1L
 
   # Only plot a legend for the first one
   if (legend) {
-    graphics::legend(
-      "topright",
-      legend = classes,
-      col = cols,
-      lwd = 2,
-      bty = "n",
-      cex = 1.2,
-      inset = c(0.1, 0)
-    )
+  graphics::legend(
+    "topright",
+    legend = classes,
+    col = cols,
+    lwd = 2,
+    bty = "n",
+    cex = 1.2,
+    inset = c(0.1, 0)
+  )
     legend <- FALSE
-  }
+  } 
 
   if (even) {
     even <- FALSE
@@ -408,7 +395,7 @@ for (v in vars) {
   }
 }
 
-# Adding a legend to empty panel (assuming the last panel is empty - this won't hold if you are plotting other variables!)
+# Adding a legend to empty panel (assuming the last panel is empty)
 # Empty panel for legend
 graphics::plot.new()
 
@@ -433,44 +420,24 @@ ProfileCurv <- terra::rast("data/permafrost/predvars/FocalStatProfileCurv.tif")
 DiffuseSolarRad <- terra::rast("data/permafrost/predvars/DiffuseRad.tif")
 DirectSolarRad <- terra::rast("data/permafrost/predvars/DirectRad.tif")
 
-features <- list(
-  Elevation = Elevation,
-  SlopeDeg = SlopeDeg,
-  AspectDeg = AspectDeg,
-  TangentCurv = TangentCurv,
-  ProfileCurv = ProfileCurv,
-  DiffuseSolarRad = DiffuseSolarRad,
-  DirectSolarRad = DirectSolarRad
-)
+features <- list(Elevation = Elevation, SlopeDeg = SlopeDeg, AspectDeg = AspectDeg, TangentCurv = TangentCurv, ProfileCurv = ProfileCurv, DiffuseSolarRad = DiffuseSolarRad, DirectSolarRad = DirectSolarRad)
 
 # stack features into a single SpatRaster
 features <- terra::rast(features)
 
 # Downsample features by a factor of 10 for speed if desired (optional)
 # Adjust cores to what you have available
-features <- terra::aggregate(
-  features,
-  fact = 10,
-  fun = mean,
-  na.rm = TRUE,
-  cores = 6
-)
+features <- terra::aggregate(features, fact = 10, fun = mean, na.rm = TRUE, cores = 6)
 
 # Get a vector of the coffee creek region
-PermMap <- terra::vect("path/Tetra_pmfst.shp")
-PermMap$Type <- as.factor(outcome$Type)
-# Retain only the column with the class labels, drop the rest
+PermMap <- terra::vect("data/permafrost/training/MineSitePermafrost_TetraTech_20170224.dbf")
 PermMap <- PermMap[, "Type"]
 PermMap <- terra::project(PermMap, features) # ensure the crs is the same)
 
 # Extract the predictor values at the locations of PermMap
 predvals_coffee <- terra::crop(features, PermMap)
 predvals_coffee <- terra::mask(predvals_coffee, PermMap)
-predvals_coffee <- terra::as.data.frame(
-  predvals_coffee,
-  xy = TRUE,
-  na.rm = TRUE
-)
+predvals_coffee <- terra::as.data.frame(predvals_coffee, xy = TRUE, na.rm = TRUE)
 
 predvals_all <- terra::as.data.frame(features, xy = TRUE, na.rm = TRUE)
 
@@ -478,22 +445,11 @@ predvals_all <- terra::as.data.frame(features, xy = TRUE, na.rm = TRUE)
 # With dismo, first argument is a raster, second is a matrix/data.frame
 # Convert predvals_coffee to a raster::stack
 # Drop vegetation, dismo::mess doesn't play well with categorical variables
-features_stack <- raster::stack(terra::subset(
-  features,
-  c(
-    "Elevation",
-    "SlopeDeg",
-    "AspectDeg",
-    "TangentCurv",
-    "ProfileCurv",
-    "DiffuseSolarRad",
-    "DirectSolarRad"
-  )
-))
-# Expect warnings about 'no non-missing arguments' because of NA values
+features_stack <- raster::stack(terra::subset(features, c("Elevation", "SlopeDeg", "AspectDeg", "TangentCurv", "ProfileCurv", "DiffuseSolarRad", "DirectSolarRad")))
+# Expect warnings aabout 'no non-missing arguments' because of NA values
 dismo <- dismo::mess(features_stack, predvals_coffee[, c(3:9)]) # Leave out x and y columns
 
-# Save dismo as a raster
+# Save dismo as a raster 
 raster::writeRaster(dismo, "path.tif", overwrite = TRUE)
 # dismo <- raster::raster("path.tif")
 
@@ -503,7 +459,7 @@ dismo <- terra::rast(dismo)
 
 # define colour-blind friendly palettes
 mess_cols <- grDevices::hcl.colors(100, "Viridis")
-neg_cols <- grDevices::hcl.colors(100, "Inferno")
+neg_cols  <- grDevices::hcl.colors(100, "Inferno")
 
 # negative raster
 neg <- dismo
@@ -579,4 +535,136 @@ mtext(
 
 dev.off()
 
-# Heads up: the plot was written to your working directory, or to whatever you specified in the call to png()!
+
+# Generation of ERA5 climate maps and histograms ##################
+library(ecmwfr)
+
+wf_set_key(key = "your_key_here")
+
+# Generate a list of requests for ERA5 data (temperature, SWE, precipitation)
+requests <- list(
+  temperature = list(
+    dataset_short_name = "reanalysis-era5-land-monthly-means",
+    product_type = "monthly_averaged_reanalysis",
+    variable = "2m_temperature",
+    year = c("2020", "2021", "2022", "2023", "2024"),
+    month = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"),
+    time = "00:00",
+    data_format = "grib",
+    download_format = "zip",
+    area = c(65, -141.5, 62, -136.5),
+    target = "2m_temperature.grib"
+  ),
+  swe = list(
+    dataset_short_name = "reanalysis-era5-land-monthly-means",
+    product_type = "monthly_averaged_reanalysis",
+    variable = "snow_depth_water_equivalent",
+    year =  c("2020", "2021", "2022", "2023", "2024"),
+    month = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"),
+    time = "00:00",
+    data_format = "grib",
+    download_format = "zip",
+    area = c(65, -141.5, 62, -136.5),
+    target = "swe.grib"
+  ),
+  precip = list(
+    dataset_short_name = "reanalysis-era5-land-monthly-means",
+    product_type = "monthly_averaged_reanalysis",
+    variable = "total_precipitation",
+    year =  c("2020", "2021", "2022", "2023", "2024"),
+    month = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"),
+    time = "00:00",
+    data_format = "grib",
+    download_format = "zip",
+    area = c(65, -141.5, 62, -136.5),
+    target = "precip.grib"
+  )
+)
+
+# Make the download. This can take a long time!
+wf_request_batch(
+  request_list = requests,
+  workers = parallel::detectCores() - 2,
+  path = "~/era5"  # Change this if desired
+)
+
+
+# Load the training map, for highlighting the mine site on the maps and histograms
+training_map <- terra::vect("path/Tetra_pmfst.shp")
+training_map <- terra::project(training_map, "epsg:4326")
+# Make points for the coffee ck mine site at 62.8667, -139.1667
+coffee <- terra::vect(cbind(-139.1667, 62.8667), type = "points", crs = "epsg:4326")
+
+
+# Project the rasters to lat/long (EPSG:4326) for plotting and analysis
+temp <- terra::rast("~/era5/2m_temperature/data.grib")
+temp <- terra::project(temp, "epsg:4326")
+precip <- terra::rast("~/era5/precip/data.grib")
+precip <- terra::project(precip, "epsg:4326")
+swe <- terra::rast("~/era5/swe/data.grib")
+swe <- terra::project(swe, "epsg:4326")
+
+extent <- terra::vect("~/era5/extent.shp")
+extent <- terra::project(extent, "epsg:4326")
+
+# For temp, accumulate all months into one layer
+mean_temp <- terra::mean(temp, na.rm = TRUE) - 273.15 # convert to Celsius
+# Find the min/max of cells intersecting with the 'extent'
+mean_temp <- terra::mask(mean_temp, extent)
+terra::plot(mean_temp) # ! in degrees Celsius
+# Add a title to the map
+title(main = "Mean Annual Air Temperature 2020-2024 (\u2103)", line = 2.5, cex.main = 1, adj = 0.35)
+# Add a point for coffee creek mine site
+terra::points(coffee, col = "red", pch = 19, cex = 1.5)
+
+# Find only the cell values that intersect with the training map
+training_map_temp <- terra::mask(mean_temp, training_map)
+training_map_temp_values <- terra::values(training_map_temp, na.rm = TRUE)
+
+terra::hist(mean_temp, breaks = 100, main = "Mean Annual Air Temperature (2020-2024)", xlab = "Temperature (C)", ylab = "Frequency")
+# Add a rectangle to the histogram for the training map values
+rect(xleft = min(training_map_temp_values), xright = max(training_map_temp_values),
+     ybottom = 0, ytop = 27,
+     col = rgb(1, 0, 0, 0.2), border = "red")
+
+quantile(mean_temp, probs = c(0.1, 0.5, 0.9), na.rm = TRUE)
+
+
+# For precip, find the sum of all months (60) and divide by 5 to get the total per year
+mean_precip <- (sum(precip * 30.5, na.rm = TRUE) * 1000) / 5
+# Find the min/max of cells intersecting with the 'extent'
+mean_precip <- terra::mask(mean_precip, extent)
+terra::plot(mean_precip) # !in mm
+# Add a title to the map
+title(main = "Mean Annual Precipitation 2020-2024 (mm)", line = 2.5, cex.main = 1, adj = 0.4)
+# Add a point for coffee creek mine site
+terra::points(coffee, col = "red", pch = 19, cex = 1.5)
+
+# Find only the cell values that intersect with the training map
+training_map_precip <- terra::mask(mean_precip, training_map)
+training_map_precip_values <- terra::values(training_map_precip, na.rm = TRUE)
+terra::hist(mean_precip, breaks = 100, main = "Mean Annual Precipitation (2020-2024)", xlab = "Precipitation (mm)", ylab = "Frequency")
+# Add a rectangle to the histogram for the training map values
+rect(xleft = min(training_map_precip_values), xright = max(training_map_precip_values),
+     ybottom = 0, ytop = 30,
+     col = rgb(1, 0, 0, 0.2), border = "red")
+
+# For SWE, we really only need the April max SWE. Subset for April
+mean_swe <- c(swe[[4]], swe[[16]], swe[[28]], swe[[40]], swe[[52]])
+mean_swe <- terra::mean(mean_swe, na.rm = TRUE) * 1000
+# Find the min/max of cells intersecting with the 'extent'
+mean_swe <- terra::mask(mean_swe, extent)
+terra::plot(mean_swe) # ! in meters of SWE
+# Add a title to the map
+title(main = "Mean April SWE 2020-2024 (mm)", line = 2.5, cex.main = 1, adj = 0.4)
+# Add a point for coffee creek mine site
+terra::points(coffee, col = "red", pch = 19, cex = 1.5)
+
+# Find only the cell values that intersect with the training map
+training_map_swe <- terra::mask(mean_swe, training_map)
+training_map_swe_values <- terra::values(training_map_swe, na.rm = TRUE)
+terra::hist(mean_swe, breaks = 100, main = "Mean April SWE (2020-2024)", xlab = "SWE (mm)", ylab = "Frequency")
+# Add a rectangle to the histogram for the training map values
+rect(xleft = min(training_map_swe_values), xright = max(training_map_swe_values),
+     ybottom = 0, ytop = 30,
+     col = rgb(1, 0, 0, 0.2), border = "red")
