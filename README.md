@@ -1,2 +1,1 @@
-# Supplementary material for Regional-Scale High-Resolution Permafrost Mapping by Scalable Machine Learning
-
+# Supplementary material for Topography-based High-Resolution Permafrost Mapping by Machine Learning: An example in the Dawson Range
