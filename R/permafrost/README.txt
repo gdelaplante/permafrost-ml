@@ -79,26 +79,26 @@ Data and GitHub
 
 input_manifest.csv records paths, sizes, MD5 checksums, and Git/LFS storage for the
 34 staged input files (4.93 GiB), including .aux.xml sidecars and shapefile companions.
-The publication code branch includes 20 small inputs/metadata files. Fourteen larger
-files (4.93 GiB together) are prepared on a local LFS data branch and are not uploaded
-from the current slow connection. The main README identifies this incomplete remote
-data release explicitly. Do not treat a successful clone as a complete analysis dataset.
+The full snapshot is hosted through Git and Git LFS on the publication review
+branch. The code and data are proposed together in PR #1 and are not yet merged
+into main. Clone the review branch and materialize the data:
 
   git lfs install
-  git clone https://github.com/gdelaplante/permafrost-ml.git
+  git clone --branch codex/publication-workflow-lfs --single-branch https://github.com/gdelaplante/permafrost-ml.git
   cd permafrost-ml
   git lfs pull
-  Rscript --vanilla R/permafrost/verify_inputs.R --available
+  Rscript --vanilla R/permafrost/verify_inputs.R
 
-After the data branch is published, git lfs pull and the full verifier (without
---available) retrieve/check the complete snapshot. TIFFs and GeoPackages are assigned
-to Git LFS by .gitattributes; small input bytes are excluded from line-ending conversion.
+After PR #1 is merged, the default main branch can be cloned instead. TIFFs and
+GeoPackages are assigned to Git LFS by .gitattributes; small input bytes are excluded
+from line-ending conversion. The full verifier checks every required input, including
+metadata companions. --available remains useful for diagnosing partial checkouts.
 The analysis detects unmaterialized LFS pointers and tells you to run git lfs pull.
 
 If exact processed inputs are hosted elsewhere, add HTTPS file URLs to
 input_downloads.csv, then run download_inputs.R --download. It caches files locally,
 checks size and MD5 before finalizing each download, and never replaces an existing
-input. No hosted URLs for the custom derived grids were available during preparation.
+input. No separate mirrors for the custom grids are configured; Git LFS supplies them.
 Use download_inputs.R --check to list missing registered inputs without network use.
 Public-source context and BIO1 downloads are supported separately:
 
@@ -116,7 +116,7 @@ GDBs, saved workspaces, and local renv libraries. Large publication working-tree
 were staged locally as hard links to immutable MSc inputs to avoid a second working-tree
 copy; create new files rather than editing an existing linked input in place.
 
-The exact processed grids are intended to be versioned alongside the code in the data release. data_sources.csv documents
+The exact processed grids are versioned alongside the code. data_sources.csv documents
 the original products, preparation steps, and provenance gaps: original terrain,
 radiation, and hypsometric processing parameters are not reconstructed by this workflow.
 context_sources.csv provides public source/download links; context_original_manifest.csv

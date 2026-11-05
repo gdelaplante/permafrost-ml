@@ -6,29 +6,27 @@ The current entry point is [`R/permafrost/permafrost_model_revision.R`](R/permaf
 
 ## Data release status
 
-**The code branch includes 20 small input and metadata files. Fourteen larger inputs remain prepared locally for Git LFS upload and are not yet hosted.** The complete 34-file snapshot totals 4.93 GiB. The full regional analysis requires that pending data release or exact hosted equivalents; the synthetic smoke test runs without it.
+The complete **34-file input snapshot (4.93 GiB)** is available through Git and Git LFS on the publication review branch. TIFFs and GeoPackages use LFS. The code and data are proposed together in [PR #1](https://github.com/gdelaplante/permafrost-ml/pull/1); they are not yet merged into `main`.
 
-Git LFS is configured. The local `codex/publication-input-data` branch is reserved for the complete data commit and can be pushed from a faster connection. The code branch does not contain pointers to unavailable LFS objects.
-
-## Get the code and available data
+## Get the code and data
 
 Install [Git LFS](https://git-lfs.com/) before cloning:
 
 ```sh
 git lfs install
-git clone https://github.com/gdelaplante/permafrost-ml.git
+git clone --branch codex/publication-workflow-lfs --single-branch https://github.com/gdelaplante/permafrost-ml.git
 cd permafrost-ml
 git lfs pull
-Rscript --vanilla R/permafrost/verify_inputs.R --available
+Rscript --vanilla R/permafrost/verify_inputs.R
 ```
 
-The required full input snapshot contains **34 files totaling 4.93 GiB**; it is not all available on this code branch yet. TIFFs and GeoPackages use Git LFS; small observations, shapefile companions, and metadata use ordinary Git. [`input_manifest.csv`](R/permafrost/input_manifest.csv) records every required file's path, size, checksum, and storage type. Include `.aux.xml` files: some raster band descriptions are stored there.
+The input snapshot contains **34 files totaling 4.93 GiB**. After PR #1 is merged, the default `main` branch can be cloned instead. TIFFs and GeoPackages use Git LFS; small observations, shapefile companions, and metadata use ordinary Git. [`input_manifest.csv`](R/permafrost/input_manifest.csv) records every required file's path, size, checksum, and storage type. Include `.aux.xml` files: some raster band descriptions are stored there.
 
-Use Git with LFS to obtain the data. A source ZIP may contain pointer files depending on the repository's archive settings. Run the verifier without `--available` once the full data release has been obtained. The input verifier checks the materialized data, and the analysis reports a clear error if it encounters an LFS pointer. [GitHub's LFS documentation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) explains how the pointers and file downloads work.
+Use Git with LFS to obtain the data. A source ZIP may contain pointer files depending on the repository's archive settings. The input verifier checks the materialized data, and the analysis reports a clear error if it encounters an LFS pointer. [GitHub's LFS documentation](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) explains how the pointers and file downloads work.
 
 ## Restore R packages and run
 
-The full-data commands below require all 34 inputs. Until the data release is uploaded, use the synthetic smoke test to exercise the workflow.
+The analysis commands below require all 34 inputs. Run the input verifier after `git lfs pull`; use the synthetic smoke test for a short execution check.
 
 R 4.5.1 and the tested analysis package versions are recorded in [`renv.lock`](R/permafrost/renv.lock). From R in the repository root:
 
@@ -62,7 +60,7 @@ Sourcing the entry point defines `run_permafrost()` without starting a run. Sett
 
 Functions under [`revision/`](R/permafrost/revision/) handle inputs, model fitting, raster prediction, permutation importance, partial dependence, MESS, validation, maps, and the climate comparison. Model-dependent stages share the same live `spatPredict` result in one R process. **Do not save and reload `run` or `run$res`**: their `terra` objects contain external pointers. Portable outputs include GeoTIFFs, CSV sample/metric tables, and a separately exported non-spatial fitted model.
 
-The prepared full snapshot includes the processed predictors, training polygons, Casino binary reference raster, YGS thermistor observations, compact map-context layers, and frozen climate inputs. See [`data_sources.csv`](R/permafrost/data_sources.csv) for sources and preparation limits. Versioning the processed grids preserves the analysis inputs; the original terrain, solar-radiation, and hypsometric preprocessing recipes are not fully reconstructed here.
+The versioned snapshot includes the processed predictors, training polygons, Casino binary reference raster, YGS thermistor observations, compact map-context layers, and frozen climate inputs. See [`data_sources.csv`](R/permafrost/data_sources.csv) for sources and preparation limits. Versioning the processed grids preserves the analysis inputs; the original terrain, solar-radiation, and hypsometric preprocessing recipes are not fully reconstructed here.
 
 [`context_sources.csv`](R/permafrost/context_sources.csv) links to GeoYukon and Statistics Canada sources. Optional preparation can rebuild missing context from local sources or explicit downloads:
 
@@ -85,7 +83,7 @@ Rscript --vanilla R/permafrost/download_inputs.R --check
 Rscript --vanilla R/permafrost/download_inputs.R --download
 ```
 
-No direct hosted URLs for the custom terrain/radiation grids were available during this preparation. Public upstream products cannot substitute for the exact derived grids without their missing preprocessing recipes. The downloader rejects bytes that do not match the manifest and keeps successful downloads for later offline use. Rebuilt map-context GeoPackages can differ from the frozen snapshot at the byte level.
+No separate HTTPS mirrors for the custom terrain/radiation grids are configured; their exact bytes are supplied by Git LFS. Public upstream products cannot substitute for the exact derived grids without their missing preprocessing recipes. The downloader rejects bytes that do not match the manifest and keeps successful downloads for later offline use. Rebuilt map-context GeoPackages can differ from the frozen snapshot at the byte level.
 
 Routine analysis uses locally cached inputs offline. It does not download the large climate archive or refresh observations. Preparation keeps existing snapshots; newly downloaded upstream data should be treated as a new version.
 
