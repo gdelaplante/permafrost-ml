@@ -1,0 +1,35 @@
+path,bytes,md5,storage
+data/permafrost/climate/ERALClim_bio1_1991-2020.tif,21673733,1d9aa47aa085a49b46e27957ded7f823,Git LFS
+data/permafrost/climate/eccc_normals_1991_2020.csv,2517,0c252fe7c059489ed80a34f1c5f8d7ba,Git
+data/permafrost/climate/eccc_stations.csv,138,bca6e5d8a7776ba01fd938f8969f7b23,Git
+data/permafrost/context/boundary.gpkg,196608,e82b71c85e64d738f310674a936b2442,Git LFS
+data/permafrost/context/glacial_limits.gpkg,303104,e1b01a72fbca487c793d97baf439c42e,Git LFS
+data/permafrost/context/waterbodies.gpkg,9920512,8583b28048646c70dd853b36c79fd347,Git LFS
+data/permafrost/context/watercourses.gpkg,32432128,41b9219bb2764d24b30d608ee6d9a023,Git LFS
+data/permafrost/predvars/Aspect.tif,443205882,4e3918049691e723cee5b14ede6b705a,Git LFS
+data/permafrost/predvars/Aspect.tif.aux.xml,2789,e963fbd3be2c28efc0c8a125399bcf5a,Git
+data/permafrost/predvars/DEMClipped.tif,118455722,648a4445568cd4943505dee18845ce01,Git LFS
+data/permafrost/predvars/DEMClipped.tif.aux.xml,2530,f1cc1c6371d5f6995023474b404249e7,Git
+data/permafrost/predvars/DiffuseRad.tif,417320126,5452c2910835fb5a2a89726b921fbd21,Git LFS
+data/permafrost/predvars/DiffuseRad.tif.aux.xml,2393,3445ec19fbcaabc817deff1e90205804,Git
+data/permafrost/predvars/DirectRad.tif,444529198,ba31ebfc82b50194c8a18cc537a72c80,Git LFS
+data/permafrost/predvars/DirectRad.tif.aux.xml,2647,c9815e57b8e85a84389e06ea4da36bdb,Git
+data/permafrost/predvars/FocalStatProfileCurv.tif,517600058,8db119526445cdd6496ac63de98dd462,Git LFS
+data/permafrost/predvars/FocalStatProfileCurv.tif.aux.xml,2148,5eccb1541b3f499d9a0b71d782df6bcf,Git
+data/permafrost/predvars/FocalStatTangentCurv.tif,517913832,77b846526c57c7a07e0dca0ea60d43b3,Git LFS
+data/permafrost/predvars/FocalStatTangentCurv.tif.aux.xml,2087,f6acbaf4363a0dca466f4b02e6c73de7,Git
+data/permafrost/predvars/HLS_Fmask_v1_1_snow_lengthT_winterYear1819_2425_Canada_yt_clipped_median.tif,1608818305,a01c3eea1b78429687a58f9dfc2b2289,Git LFS
+data/permafrost/predvars/SlopeDeg.tif,441267686,82492616b4d9d4f0f2f2735b75393076,Git LFS
+data/permafrost/predvars/SlopeDeg.tif.aux.xml,2500,f35d6542de67a6c2e9d88912e33130a5,Git
+data/permafrost/predvars/hypsometric_predictors_50km_MRDEM.tif,694156998,e2878fb1ffe72a8afa54ad75eb604969,Git LFS
+data/permafrost/predvars/vegetation_resampled.tif,13896858,342bab4a87e951c8687ae7480832c485,Git LFS
+data/permafrost/predvars/vegetation_resampled.tif.aux.xml,1066,2be3351707ee624b6d58aa6ce730875f,Git
+data/permafrost/testing/YGS_PFT_LOCATIONS.CSV,19110,630822a9183ee9680e8c1b5bb6ff252f,Git
+data/permafrost/testing/casino_rast.tif,12602186,b944a2a006112b0c6461deb8f9b4049f,Git LFS
+data/permafrost/testing/casino_rast.tif.aux.xml,1472,78014df69a6ead42d9a259d2bbb96eb9,Git
+data/permafrost/training/MineSitePermafrost_TetraTech_20170224.dbf,12451,1ac77ad82fbfa3ccebcaf1f82e60f073,Git
+data/permafrost/training/MineSitePermafrost_TetraTech_20170224.prj,424,354d9231a5bbf3ca3ee7ff4adafc5787,Git
+data/permafrost/training/MineSitePermafrost_TetraTech_20170224.sbn,1172,da8f6cdd4bc615a3178284f67fbafcfd,Git
+data/permafrost/training/MineSitePermafrost_TetraTech_20170224.sbx,228,cb08fe791542f4898864e8856afb01f2,Git
+data/permafrost/training/MineSitePermafrost_TetraTech_20170224.shp,467288,9353fcb95ea3d5c7d5f05adfe762ca22,Git
+data/permafrost/training/MineSitePermafrost_TetraTech_20170224.shx,924,b208bfdfe5b7438dd9eb4e72552c3a7f,Git

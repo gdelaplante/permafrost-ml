@@ -1,0 +1,5 @@
+key,output,local_source,source_pattern,metadata_url,download_url
+waterbodies,waterbodies.gpkg,data/plotting_layers/Waterbodies_50k_Canvec.gdb,Waterbodies_50k_Canvec[.]gdb$,https://open.yukon.ca/data/waterbodies-50k-canvec,https://map-data.service.yukon.ca/GeoYukon/Base/Waterbodies_50k_Canvec/Waterbodies_50k_Canvec.fgdb.zip
+watercourses,watercourses.gpkg,data/plotting_layers/Watercourses_50k_Canvec.gdb,Watercourses_50k_Canvec[.]gdb$,https://open.yukon.ca/data/watercourses-50k-canvec,https://map-data.service.yukon.ca/GeoYukon/Base/Watercourses_50k_Canvec/Watercourses_50k_Canvec.fgdb.zip
+glacial_limits,glacial_limits.gpkg,data/plotting_layers/Glacial_Limits_1M.gdb,Glacial_Limits_1M[.]gdb$,https://open.yukon.ca/data/glacial-limits-1m,https://map-data.service.yukon.ca/GeoYukon/Geological/Glacial_Limits_1M/Glacial_Limits_1M.fgdb.zip
+boundary,boundary.gpkg,data/plotting_layers/lpr_000b16a_e.shp,lpr_000b16a_e[.]shp$,https://www12.statcan.gc.ca/census-recensement/2016/geo/bound-limit/bound-limit-2016-eng.cfm,https://www12.statcan.gc.ca/census-recensement/2016/geo/sip-pis/boundary-limites/files-fichiers/lpr_000b16a_e.zip
