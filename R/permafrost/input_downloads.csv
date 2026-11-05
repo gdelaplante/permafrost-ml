@@ -1,0 +1,15 @@
+path,download_url,note
+data/permafrost/climate/ERALClim_bio1_1991-2020.tif,,Public nested ZIP download supported by prepare_permafrost.R --bio1
+data/permafrost/context/waterbodies.gpkg,,Upstream rebuild available via prepare_permafrost.R --context --download; regenerated GeoPackage bytes may differ
+data/permafrost/context/watercourses.gpkg,,Upstream rebuild available via prepare_permafrost.R --context --download; regenerated GeoPackage bytes may differ
+data/permafrost/predvars/Aspect.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/DEMClipped.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/DiffuseRad.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/DirectRad.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/FocalStatProfileCurv.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/FocalStatTangentCurv.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/HLS_Fmask_v1_1_snow_lengthT_winterYear1819_2425_Canada_yt_clipped_median.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/SlopeDeg.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/hypsometric_predictors_50km_MRDEM.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/predvars/vegetation_resampled.tif,,Exact processed input needs Git LFS upload or a hosted file URL
+data/permafrost/testing/casino_rast.tif,,Exact processed input needs Git LFS upload or a hosted file URL

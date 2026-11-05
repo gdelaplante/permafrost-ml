@@ -1,0 +1,4 @@
+Retrieved UTC: 2026-11-05 21:28:57 UTC
+weathercan version: 1.0.1
+ECCC 1991-2020 normals; climate IDs 2100LRP, 2100301, 2100701.
+Source: https://climate.weather.gc.ca/climate_normals/

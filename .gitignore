@@ -47,3 +47,16 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Generated analysis outputs and optional upstream download caches
+/data/permafrost/outputs/
+/data/permafrost/raw/
+/data/plotting_layers/
+/data/watersheds/
+/data/permafrost/model optimization/
+/renv/
+/renv.lock
+*.rds
+*.RData
+*.RDataTmp
+Rplots.pdf
