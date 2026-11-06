@@ -1,5 +1,5 @@
 # Reproducible permafrost workflow. See README.txt in this directory.
-# CLI: Rscript --vanilla R/permafrost/permafrost_model_revision.R --profile=quick --check
+# Open reproduce_paper.R for a numbered walkthrough in your R IDE.
 # R:   source("R/permafrost/permafrost_model_revision.R")
 #      run <- run_permafrost(profile = "quick")
 # Sourcing defines functions only; it never starts an expensive run.
@@ -19,9 +19,22 @@ run_permafrost <- local({
       assign(name, getExportedValue(pkg, name), envir = modules)
     }
   }
-  for (file in c("config.R", "helpers.R", "inputs.R", "model.R", "importance.R",
-                 "partial_dependence.R", "mess.R", "validation.R", "maps.R",
-                 "climate.R", "pipeline.R")) {
+  # Each source() below evaluates function definitions only. No analysis runs here.
+  # Keeping these files separate lets readers inspect one scientific task at a time.
+  module_files <- c(
+    "config.R" = "Defines profiles, predictor paths, class codes, and seeds",
+    "helpers.R" = "Defines package/input checks, manifests, masking, and stage records",
+    "inputs.R" = "Defines raster alignment checks and predictor/polygon loading",
+    "model.R" = "Defines random-forest fitting, holdout exports, and regional prediction",
+    "importance.R" = "Defines class-specific permutation importance and its figure",
+    "partial_dependence.R" = "Defines probability refitting and partial-dependence curves",
+    "mess.R" = "Defines continuous-predictor MESS and its map/histogram",
+    "validation.R" = "Defines thermistor grouping/scoring and Casino agreement",
+    "maps.R" = "Defines regional and Casino map graphics",
+    "climate.R" = "Defines the ECCC/BIO1 station comparison",
+    "pipeline.R" = "Defines the execution order and passes live objects between stages"
+  )
+  for (file in names(module_files)) {
     source(file.path(script_dir, "revision", file), local = modules, encoding = "UTF-8")
   }
   default_root <- normalizePath(file.path(script_dir, "../.."), winslash = "/")

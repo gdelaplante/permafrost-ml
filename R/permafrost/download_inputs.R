@@ -1,6 +1,6 @@
-# Optional exact-input downloads. A cached local input is never replaced.
-# Populate download_url for any externally hosted processed inputs, then run:
-# Rscript --vanilla R/permafrost/download_inputs.R --download
+# Exact-input downloads for R-console use. Real cached inputs are never replaced.
+# Source this file to define download_snapshot_inputs(), then call it from R.
+# The supplied registry contains fixed URLs for the published input snapshot.
 
 download_snapshot_inputs <- function(root, registry = NULL, check_only = FALSE) {
   root <- normalizePath(root, winslash = "/", mustWork = TRUE)
@@ -11,7 +11,14 @@ download_snapshot_inputs <- function(root, registry = NULL, check_only = FALSE) 
   if (anyDuplicated(sources$path) || any(!sources$path %in% manifest$path)) {
     stop("Download registry must contain unique paths from input_manifest.csv.")
   }
-  missing <- sources[!file.exists(file.path(root, sources$path)), , drop = FALSE]
+  is_pointer <- function(path) {
+    if (!file.exists(path) || file.info(path)$size >= 1024) return(FALSE)
+    prefix <- charToRaw("version https://git-lfs.github.com/spec/v1")
+    identical(readBin(path, "raw", n = length(prefix)), prefix)
+  }
+  paths <- file.path(root, sources$path)
+  cached <- file.exists(paths) & !vapply(paths, is_pointer, logical(1))
+  missing <- sources[!cached, , drop = FALSE]
   if (!nrow(missing)) {
     message("All registered inputs are already cached locally.")
     return(invisible(missing))
@@ -40,6 +47,10 @@ download_snapshot_inputs <- function(root, registry = NULL, check_only = FALSE) 
       if (status != 0L || file.info(part)$size != expected$bytes ||
           unname(tools::md5sum(part)) != expected$md5) {
         stop("Downloaded bytes do not match the recorded snapshot: ", relative)
+      }
+      if (file.exists(target)) {
+        if (!is_pointer(target)) stop("An input appeared during download; preserving it: ", target)
+        unlink(target) # Replace only a verified LFS pointer, never an existing dataset.
       }
       if (!file.rename(part, target)) stop("Could not finalize input: ", relative)
     }, finally = {
