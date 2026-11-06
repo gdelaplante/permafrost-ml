@@ -1,5 +1,6 @@
-# All observations inside the raster extent are shown, including those without a
+# Return all observations inside the raster extent, including those without a
 # usable prediction. Binary agreement follows the validation module's MESS rule.
+# The regional map displays only observations with known permafrost status.
 thermistor_map_points <- function(cfg, prediction, mess) {
   d <- read.csv(cfg$thermistors, skip = 1, stringsAsFactors = FALSE)
   d$ROW_ID <- seq_len(nrow(d))
@@ -216,36 +217,63 @@ plot_prediction_map <- function(cfg) {
     off.lat = 0.15
   )
 
-  # ---- Settlements and projects --------------------------------
+  # ---- Thermistors, settlements, and project callouts -----------
 
   comm_xy <- terra::crds(communities)
   mines_xy <- terra::crds(mines)
 
+  # Purple and orange stand apart from the blue permafrost classes. Shapes
+  # distinguish agreement as well as colour. Undetermined observations remain
+  # in regional_map_thermistors.csv but are omitted from the map and legend.
+  status_order <- c("Agreement", "Disagreement", "No valid MESS-filtered prediction")
+  symbols <- c(21, 24, 4)
+  colours <- c("#A020A0", "#D55E00", "#444444")
+  for (i in seq_along(status_order)) {
+    selected <- which(thermistors$MAP_STATUS == status_order[i])
+    if (!length(selected)) next
+    if (i == 3L) {
+      # A white under-stroke keeps crosses visible against dark prediction cells.
+      terra::points(thermistors[selected, ], pch = symbols[i],
+        col = "white", cex = 0.90, lwd = 2.5)
+    }
+    terra::points(thermistors[selected, ], pch = symbols[i], bg = colours[i],
+      col = if (i <= 2L) "white" else colours[i], cex = 0.90, lwd = 0.9)
+  }
+
   points(comm_xy, pch = 21, bg = "firebrick2",
          col = "black", cex = 0.9)
-
-  points(mines_xy, pch = 21, bg = "deepskyblue1",
-         col = "black", cex = 0.9)
-
   text(comm_xy, labels = communities_df$name,
        pos = 1, offset = 0.35, cex = 0.95)
 
-  text(mines_xy, labels = mines_df$name,
-       pos = 1, offset = 0.35, cex = 0.95)
-
-  # Thermistor locations distinguish disagreement from unavailable predictions.
-  status_order <- c("Agreement", "Disagreement", "No valid MESS-filtered prediction",
-                    "Undetermined observation")
-  symbols <- c(21, 24, 4, 1)
-  colours <- c("#009E73", "#D55E00", "#444444", "#777777")
-  for (i in seq_along(status_order)) {
-    selected <- which(thermistors$MAP_STATUS == status_order[i])
-    if (length(selected)) terra::points(thermistors[selected, ], pch = symbols[i],
-      bg = colours[i], col = if (i <= 2) "white" else colours[i], cex = 0.65, lwd = 0.7)
+  # Fixed callouts in the map's projected metre coordinates keep both project
+  # names outside the dense local thermistor clusters. The points themselves
+  # stay at their original coordinates and are drawn last, above thermistors.
+  project_colour <- "#F0C541"
+  label_offsets <- data.frame(dx = c(-18000, 20000), dy = c(-5000, -6500),
+                              adj = c(1, 0))
+  project_labels <- c("Coffee Gold\nProject", "Casino\nProject")
+  for (i in seq_len(nrow(mines_xy))) {
+    x <- mines_xy[i, 1] + label_offsets$dx[i]
+    y <- mines_xy[i, 2] + label_offsets$dy[i]
+    width <- strwidth(project_labels[i], cex = 0.88, font = 2)
+    height <- strheight(project_labels[i], cex = 0.88, font = 2)
+    left <- x - label_offsets$adj[i] * width
+    right <- left + width
+    edge <- if (label_offsets$dx[i] < 0) right + 1200 else left - 1200
+    segments(mines_xy[i, 1], mines_xy[i, 2], edge, y, col = "white", lwd = 2.8)
+    segments(mines_xy[i, 1], mines_xy[i, 2], edge, y, col = "grey20", lwd = 0.9)
+    rect(left - 1200, y - height / 2 - 1100,
+         right + 1200, y + height / 2 + 1100,
+         col = "white", border = "grey50", lwd = 0.6)
+    text(x, y, project_labels[i], adj = c(label_offsets$adj[i], 0.5),
+         cex = 0.88, font = 2)
   }
+  points(mines_xy, pch = 23, bg = "white", col = "white", cex = 1.65, lwd = 1.4)
+  points(mines_xy, pch = 23, bg = project_colour, col = "black", cex = 1.25, lwd = 1.0)
+
   legend("bottomleft", title = "YGS thermistors", legend = status_order,
     pch = symbols, pt.bg = colours, col = colours, bg = "white", box.col = "grey70",
-    cex = 0.65, pt.cex = 0.9, inset = c(0.015, 0.015))
+    cex = 0.65, pt.cex = 1.05, inset = c(0.015, 0.015))
 
   # ---- Custom two-column legend -------------------------------
 
@@ -285,9 +313,9 @@ plot_prediction_map <- function(cfg) {
          cex = 0.9, xpd = NA)
   lbl(0.577, 0.976, "Settlements")
 
-  points(xx(0.555), yy(0.957), pch = 21,
-         bg = "deepskyblue1", col = "black",
-         cex = 0.9, xpd = NA)
+  points(xx(0.555), yy(0.957), pch = 23,
+         bg = project_colour, col = "black",
+         cex = 1.15, xpd = NA)
   lbl(0.577, 0.957, "Major projects")
 
   # Left column: permafrost
