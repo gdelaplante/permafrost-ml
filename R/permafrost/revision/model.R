@@ -31,8 +31,7 @@ fit_permafrost <- function(features, outcome, cfg) {
   utils::write.csv(data.frame(class = rownames(perf$byClass), perf$byClass, check.names = FALSE),
                    output_file(cfg, "holdout_by_class.csv"), row.names = FALSE)
   utils::write.csv(data.frame(
-    metric = c("Overall accuracy", "Macro one-versus-rest balanced accuracy"),
-    value = c(unname(perf$overall["Accuracy"]), mean(perf$byClass[, "Balanced Accuracy"]))),
+    metric = "Overall accuracy", value = unname(perf$overall["Accuracy"])),
     output_file(cfg, "holdout_accuracy_definitions.csv"), row.names = FALSE)
   writeLines(capture.output(print(res$best_model), print(perf)),
              output_file(cfg, "model_report.txt"))

@@ -23,7 +23,6 @@ permafrost_config <- function(root, profile = c("publication", "quick"),
                  "tancurv", "slope", "veg", "snow", "hypso"),
     # Fixed class order also defines the integer codes in prediction.tif.
     class_levels = c("Ice-poor", "Ice-rich", "Unfrozen", "Very Ice-rich"),
-    casino_radius_km = 15, north_row_ids = NULL,
     predictors = p("data/permafrost/predvars", c(
       aspect = "Aspect.tif", DEM = "DEMClipped.tif", difrad = "DiffuseRad.tif",
       dirrad = "DirectRad.tif", profcurv = "FocalStatProfileCurv.tif",

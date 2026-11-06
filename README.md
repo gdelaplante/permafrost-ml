@@ -64,6 +64,7 @@ The walkthrough explains each `source()` call where it occurs. Sourcing `permafr
 | `mess.R` | Nine-variable environmental similarity and its figure |
 | `validation.R` | Thermistor groups/metrics and Casino agreement |
 | `maps.R` | Regional and Casino comparison maps |
+| `hypsometric_map.R` | Standalone map of the processed hypsometric predictor |
 | `climate.R` | Station-normal/BIO1 comparison |
 | `pipeline.R` | Execution order and live objects passed between functions |
 
@@ -82,12 +83,23 @@ Read `pipeline.R` to follow the full calculation, then the corresponding module 
 | Figure 6: partial dependence | `Figure7_partial_dependence.csv`, `Figure7_PDP_w_snow+hypso.png` |
 | Thermistor validation | `thermistors_point_comparison.csv`, coverage/performance/confusion tables, and regional comparison PNG |
 | Climate comparison | `climate_comparison.csv` |
+| SI Figure 3: hypsometric predictor | `FigureS3_hypsometric_predictor.png` and `.pdf` |
 
-The mapping above relates the current manuscript numbering to output filenames. Confusion tables and thermistor summaries are analysis outputs rather than typeset copies of the paper tables. In particular, current thermistor summaries use the training footprint, a 15-km Casino vicinity, and the nearest three classified northern sites; they do not yet provide the manuscript's combined six-site outside group.
+The mapping above relates the current manuscript numbering to output filenames. Confusion tables and thermistor summaries are analysis outputs rather than typeset copies of the paper tables. Thermistors are assigned to the actual Coffee training footprint, Casino testing footprint, or all locations outside both footprints. Accuracy uses every classified observation with an available MESS-filtered prediction in each group; coverage tables separately report excluded or unavailable predictions. There is no distance or nearest-site selection.
+
+The hypsometric map can also be made independently, without fitting or loading a model. From the repository root in the R console:
+
+```r
+# Defines only the map function; the next line explicitly draws and saves the map.
+source("R/permafrost/revision/hypsometric_map.R")
+plot_hypsometric_predictor()
+```
+
+The standalone output is `data/permafrost/outputs/SI/FigureS3_hypsometric_predictor.png` (300 dpi), with a PDF beside it. A full run writes the same figure in its selected output directory. It displays the exact `hypsometric_range50_m` predictor band; plotting may reduce display resolution while retaining the supplied predictor values and colour scale.
 
 ## Interpretation and reproducibility scope
 
-The model predicts ice-poor, ice-rich, permafrost-free, and very ice-rich ground. SAiVE supplies the spatial holdout partition; caret performs repeated cross-validation within its training portion. Tuning currently uses caret's default classification Accuracy. Overall accuracy and mean class-specific one-versus-rest balanced accuracy are exported separately and should not be interchanged.
+The model predicts ice-poor, ice-rich, permafrost-free, and very ice-rich ground. SAiVE supplies the spatial holdout partition; caret performs repeated cross-validation within its training portion. Tuning currently uses caret's default classification Accuracy. Overall accuracy is the proportion of correctly classified holdout observations. Class-specific sensitivity, specificity, and one-versus-rest balanced accuracy remain available separately; they are not the overall accuracy reported in the paper.
 
 MESS uses nine continuous predictors, excluding vegetation. Permutation importance uses five shuffles per predictor and one-versus-rest balanced accuracy. Partial dependence uses a separately fitted probability forest when necessary, a class-balanced reference sample, and the central 2nd–98th percentile range for continuous predictors. Vegetation is evaluated at observed codes. See the [detailed methods and running instructions](R/permafrost/README.txt).
 

@@ -94,8 +94,8 @@ thinFeatures FALSE. Caret's default tuning grid and Accuracy objective are used.
 
 holdout_overall.csv contains ordinary overall Accuracy and its caret statistics.
 holdout_by_class.csv contains sensitivity, specificity, and one-versus-rest balanced
-accuracy for each class. holdout_accuracy_definitions.csv explicitly separates
-overall accuracy from the mean of class balanced accuracies. holdout_confusion.csv
+accuracy for each class. holdout_accuracy_definitions.csv defines overall accuracy
+as the proportion of correctly classified observations. holdout_confusion.csv
 uses caret's explicit Prediction and Reference fields; transpose/pivot appropriately
 when presenting observed classes as rows.
 
@@ -119,17 +119,25 @@ surface and negative-cell proportion use the full grid; the histogram uses up to
 one million sampled cells. Waterbodies are additionally removed in the regional map.
 
 Thermistor validation reads the supplied Yes/No/Undetermined observations and reports
-coverage separately from accuracy. Regions currently scored are the training polygon
-footprint, a 15-km Casino vicinity excluding that footprint, and the nearest three
-classified sites north of the training area. north_row_ids can fix those three IDs.
-All remaining sites appear in the point and coverage files, but do not receive a
-combined performance row. Consequently the manuscript's six-site outside group is
-not yet reproduced by the regional score table. Point-level outputs retain the
-information needed to define and score that group explicitly.
+coverage separately from accuracy. Regions are the actual Coffee training polygon
+footprint, Casino testing polygon footprint (excluding Coffee if they overlap),
+and every observation outside both map footprints. Region assignment is independent
+of prediction availability. Performance includes all classified observations with
+valid MESS-filtered predictions, without a radius or nearest-site selection.
+Coverage reports retain all observations and explain unavailable predictions.
 
 The climate output compares BIO1 with the ECCC annual Year normal. It also exports
 the earlier mean over Jan-Dec plus Year as a separate audit column. Difference signs
 are ERA5-Land minus ECCC. These two ECCC aggregations are distinct quantities.
+
+Standalone hypsometric predictor map
+
+The maps stage saves FigureS3_hypsometric_predictor.png (300 dpi) and a PDF in the
+run output directory. To make only this map from the processed predictor in an IDE:
+  source("R/permafrost/revision/hypsometric_map.R") # Defines the map function only.
+  plot_hypsometric_predictor()
+These files default to data/permafrost/outputs/SI/. The exact hypsometric_range50_m
+band used by the model is plotted; no forest fit or saved spatPredict result is needed.
 
 Outputs and scope
 

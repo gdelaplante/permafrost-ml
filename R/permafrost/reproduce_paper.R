@@ -53,6 +53,12 @@ read.csv(file.path(output_dir, "thermistors_performance_by_region.csv"))
 # See README.md for the mapping from manuscript figures/tables to output files.
 # Do not save/reload run or run$res: their terra objects contain external pointers.
 
+# Optional: draw the SI hypsometric map directly from its processed input, no fit.
+# This source() defines only plot_hypsometric_predictor(); the call saves PNG/PDF.
+# source("R/permafrost/revision/hypsometric_map.R")
+# plot_hypsometric_predictor(project_root)
+# Default location: data/permafrost/outputs/SI/FigureS3_hypsometric_predictor.png
+
 # Optional: fit/interpret without regional prediction (use a separate new folder).
 # run <- run_permafrost(profile = profile, stages = c("model", "importance", "pdp"),
 #   output_dir = file.path(project_root, "data/permafrost/outputs/interpretation"))

@@ -5,7 +5,7 @@ input_paths <- function(cfg, stages) {
   }
   if ("validation" %in% stages) paths <- c(paths, cfg$training, cfg$thermistors, cfg$casino)
   if ("maps" %in% stages) paths <- c(paths, cfg$casino, cfg$water, cfg$streams,
-                                   cfg$glacial, cfg$boundary)
+                                   cfg$glacial, cfg$boundary, cfg$predictors[10L])
   if ("climate" %in% stages) paths <- c(paths, cfg$climate_raster,
                                       cfg$climate_normals, cfg$climate_stations)
   unique(paths)

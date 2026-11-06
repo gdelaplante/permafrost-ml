@@ -1,12 +1,5 @@
 validate_predictions <- function(cfg, features = NULL) {
   output_dir <- cfg$output_dir
-  casino_radius_km <- cfg$casino_radius_km  # 'Near Casino' means <= 15 km from project location
-
-  # Set original CSV row IDs to identify the three specific northern sites.
-  # If NULL, select the three classified sites nearest the training region
-  # that are north of it. Selection NEVER depends on predictions being present.
-  north_row_ids <- cfg$north_row_ids
-
   prediction_rast <- terra::rast(raster_file(cfg, "prediction_w_snow_hypso.tif"))
   mess_rast <- terra::rast(raster_file(cfg, "MESS_snow_hypso.tif"))
   if (terra::is.lonlat(prediction_rast)) {
@@ -109,85 +102,20 @@ validate_predictions <- function(cfg, features = NULL) {
     message("'features' not available: skipping optional missing-predictor audit.")
   }
 
-  # ---- 3. Define the three regions independently of predictions
-  training_map <- terra::vect(
-    cfg$training
-  )
-  training_map <- terra::project(training_map, prediction_rast)
+  # Assign all observations by the actual training and testing map footprints.
+  # Region assignment never depends on whether a prediction is available.
+  training_map <- terra::project(terra::vect(cfg$training), prediction_rast)
+  casino <- terra::project(casino_polygons(cfg$casino), prediction_rast)
   in_training <- terra::is.related(ygs_vect, training_map, "intersects")
-
-  casino_pt <- terra::vect(
-    data.frame(lon = -138.83065, lat = 62.73887),
-    geom = c("lon", "lat"), crs = "EPSG:4326"
-  )
-  casino_pt <- terra::project(casino_pt, prediction_rast)
-  casino_zone <- terra::buffer(casino_pt, width = casino_radius_km * 1000)
-  in_casino <- terra::is.related(ygs_vect, casino_zone, "intersects") &
-    !in_training
-
-  training_union <- terra::aggregate(training_map)
-  training_geo <- terra::project(training_union, "EPSG:4326")
-  training_north_lat <- terra::ext(training_geo)[4]
-  dist_training_km <- as.numeric(
-    terra::distance(ygs_vect, training_union, unit = "km")[, 1]
-  )
-  ygs_vect$DIST_TRAINING_KM <- round(dist_training_km, 2)
-
-  north_candidates <- which(
-    ygs_vect$LATITUDE > training_north_lat &
-    !in_training & !in_casino &
-    !is.na(ygs_vect$PERMAFROST_BIN)
-  )
-  north_candidates <- north_candidates[
-    order(dist_training_km[north_candidates])
-  ]
-
-  if (is.null(north_row_ids)) {
-    if (length(north_candidates) < 3L) {
-      stop("Fewer than three classified sites north of training area. ",
-           "Specify the desired sites with north_row_ids or review the rule.")
-    }
-      north_idx <- head(north_candidates, 3L)
-    if (length(north_candidates) > 3L) {
-      message("Northern group is the nearest three classified sites; ",
-              "verify ROW_IDs and override if these are not the intended three.")
-    }
-  } else {
-    if (length(north_row_ids) != 3L ||
-        anyDuplicated(north_row_ids)) {
-      stop("north_row_ids must contain three distinct original CSV row IDs.")
-    }
-    north_idx <- which(ygs_vect$ROW_ID %in% north_row_ids)
-    if (length(north_idx) != 3L ||
-        any(in_training[north_idx] | in_casino[north_idx])) {
-      stop("Selected northern IDs are missing or overlap another region.")
-    }
-  }
-  in_north <- seq_len(nrow(ygs_vect)) %in% north_idx
-
-  ygs_vect$REGION <- "Other"
+  in_casino <- terra::is.related(ygs_vect, casino, "intersects") & !in_training
+  in_outside <- !in_training & !in_casino
+  ygs_vect$REGION <- "Outside Coffee and Casino"
   ygs_vect$REGION[in_training] <- "Training footprint"
-  ygs_vect$REGION[in_casino] <- "Casino vicinity"
-  ygs_vect$REGION[in_north] <- "Northern three"
-
-  message("Northern candidates (nearest first, first 10 shown):")
-  print(as.data.frame(ygs_vect)[
-    head(north_candidates, 10L),
-    c("ROW_ID", "LATITUDE", "LONGITUDE", "PERMAFROST",
-      "DIST_TRAINING_KM", "COVERAGE_STATUS"), drop = FALSE
-  ])
-  message("Selected northern three (even if outside the prediction surface):")
-  print(as.data.frame(ygs_vect)[
-    north_idx,
-    c("ROW_ID", "LATITUDE", "LONGITUDE", "PERMAFROST",
-      "DIST_TRAINING_KM", "MODEL_RAW", "MODEL_PRED",
-      "MESS", "COVERAGE_STATUS"), drop = FALSE
-  ])
-
+  ygs_vect$REGION[in_casino] <- "Casino footprint"
   regions <- list(
     "Training footprint" = ygs_vect[in_training, ],
-    "Casino vicinity" = ygs_vect[in_casino, ],
-    "Northern three" = ygs_vect[in_north, ]
+    "Casino footprint" = ygs_vect[in_casino, ],
+    "Outside Coffee and Casino" = ygs_vect[in_outside, ]
   )
 
   # ---- 4. Coverage report --------------------------------------
@@ -218,8 +146,7 @@ validate_predictions <- function(cfg, features = NULL) {
     lapply(names(regions), function(region) {
       coverage_region(regions[[region]], region)
     }),
-    list(coverage_region(ygs_vect[ygs_vect$REGION == "Other", ], "Other"),
-         coverage_region(ygs_vect, "All thermistors"))
+    list(coverage_region(ygs_vect, "All thermistors"))
   ))
   message("Coverage audit (counts refer to classified thermistors):")
   print(coverage, row.names = FALSE)
@@ -243,7 +170,7 @@ validate_predictions <- function(cfg, features = NULL) {
     fn <- sum(obs == 1L & pred == 0L)
     sens <- pct(tp, tp + fn)
     spec <- pct(tn, tn + fp)
-      metrics <- data.frame(
+    metrics <- data.frame(
       Region = region,
       Domain = domain,
       N_classified = sum(!is.na(v$PERMAFROST_BIN)),
@@ -252,8 +179,6 @@ validate_predictions <- function(cfg, features = NULL) {
       Accuracy_pct = pct(tp + tn, sum(valid)),
       Sensitivity_pct = sens,
       Specificity_pct = spec,
-      Balanced_accuracy_pct = if (is.na(sens) || is.na(spec)) NA_real_
-                              else round((sens + spec) / 2, 1),
       TP = tp, TN = tn, FP = fp, FN = fn
     )
     cm <- table(
@@ -380,8 +305,6 @@ validate_predictions <- function(cfg, features = NULL) {
 
   dev.off()
 
-  casino <- casino_polygons(cfg$casino)
-  casino <- terra::project(casino, prediction_rast)
   local_prediction <- terra::crop(prediction_rast, terra::ext(casino))
   local_mess <- terra::crop(mess_rast, terra::ext(local_prediction))
   model <- mask_mess(local_prediction, local_mess)

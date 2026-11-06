@@ -31,6 +31,7 @@ run_permafrost <- local({
     "mess.R" = "Defines continuous-predictor MESS and its map/histogram",
     "validation.R" = "Defines thermistor grouping/scoring and Casino agreement",
     "maps.R" = "Defines regional and Casino map graphics",
+    "hypsometric_map.R" = "Defines the standalone SI hypsometric predictor map",
     "climate.R" = "Defines the ECCC/BIO1 station comparison",
     "pipeline.R" = "Defines the execution order and passes live objects between stages"
   )
