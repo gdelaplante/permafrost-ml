@@ -1,8 +1,34 @@
+# All observations inside the raster extent are shown, including those without a
+# usable prediction. Binary agreement follows the validation module's MESS rule.
+thermistor_map_points <- function(cfg, prediction, mess) {
+  d <- read.csv(cfg$thermistors, skip = 1, stringsAsFactors = FALSE)
+  d$ROW_ID <- seq_len(nrow(d))
+  d$LATITUDE <- suppressWarnings(as.numeric(d$LATITUDE))
+  d$LONGITUDE <- suppressWarnings(as.numeric(d$LONGITUDE))
+  d <- d[is.finite(d$LATITUDE) & is.finite(d$LONGITUDE) &
+    abs(d$LATITUDE) <= 90 & abs(d$LONGITUDE) <= 180, ]
+  v <- terra::project(terra::vect(d, geom = c("LONGITUDE", "LATITUDE"),
+    crs = "EPSG:4326", keepgeom = TRUE), prediction)
+  v <- v[!is.na(terra::cellFromXY(prediction, terra::crds(v))), ]
+  raw <- as.integer(terra::extract(prediction, v, ID = FALSE, raw = TRUE)[, 1])
+  similarity <- as.numeric(terra::extract(mess, terra::project(v, mess), ID = FALSE)[, 1])
+  observed <- match(tolower(trimws(v$PERMAFROST)), c("no", "yes")) - 1L
+  predicted <- ifelse(!is.na(raw) & !is.na(similarity) & similarity >= 0,
+    as.integer(raw != 3L), NA_integer_)
+  status <- ifelse(is.na(observed), "Undetermined observation",
+    ifelse(is.na(predicted), "No valid MESS-filtered prediction",
+      ifelse(observed == predicted, "Agreement", "Disagreement")))
+  v$MAP_STATUS <- status
+  write.csv(as.data.frame(v), output_file(cfg, "regional_map_thermistors.csv"), row.names = FALSE)
+  v
+}
+
 plot_prediction_map <- function(cfg) {
   prediction <- terra::rast(raster_file(cfg, "prediction_w_snow_hypso.tif"))
 
   # Make NA values in 'prediction' where mess is negative
   mess <- terra::rast(raster_file(cfg, "MESS_snow_hypso.tif"))
+  thermistors <- thermistor_map_points(cfg, prediction, mess)
   prediction <- mask_mess(prediction, mess)
 
   # Load the waterbodies vector file
@@ -206,6 +232,20 @@ plot_prediction_map <- function(cfg) {
 
   text(mines_xy, labels = mines_df$name,
        pos = 1, offset = 0.35, cex = 0.95)
+
+  # Thermistor locations distinguish disagreement from unavailable predictions.
+  status_order <- c("Agreement", "Disagreement", "No valid MESS-filtered prediction",
+                    "Undetermined observation")
+  symbols <- c(21, 24, 4, 1)
+  colours <- c("#009E73", "#D55E00", "#444444", "#777777")
+  for (i in seq_along(status_order)) {
+    selected <- which(thermistors$MAP_STATUS == status_order[i])
+    if (length(selected)) terra::points(thermistors[selected, ], pch = symbols[i],
+      bg = colours[i], col = if (i <= 2) "white" else colours[i], cex = 0.65, lwd = 0.7)
+  }
+  legend("bottomleft", title = "YGS thermistors", legend = status_order,
+    pch = symbols, pt.bg = colours, col = colours, bg = "white", box.col = "grey70",
+    cex = 0.65, pt.cex = 0.9, inset = c(0.015, 0.015))
 
   # ---- Custom two-column legend -------------------------------
 

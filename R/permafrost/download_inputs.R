@@ -2,12 +2,12 @@
 # Source this file to define download_snapshot_inputs(), then call it from R.
 # The supplied registry contains fixed URLs for the published input snapshot.
 
-download_snapshot_inputs <- function(root, registry = NULL, check_only = FALSE) {
+download_snapshot_inputs <- function(root, registry = NULL, check_only = FALSE, manifest = NULL) {
   root <- normalizePath(root, winslash = "/", mustWork = TRUE)
   if (is.null(registry)) registry <- file.path(root, "R/permafrost/input_downloads.csv")
   sources <- utils::read.csv(registry, stringsAsFactors = FALSE, na.strings = "")
-  manifest <- utils::read.csv(file.path(root, "R/permafrost/input_manifest.csv"),
-                              stringsAsFactors = FALSE)
+  if (is.null(manifest)) manifest <- file.path(root, "R/permafrost/input_manifest.csv")
+  manifest <- utils::read.csv(manifest, stringsAsFactors = FALSE)
   if (anyDuplicated(sources$path) || any(!sources$path %in% manifest$path)) {
     stop("Download registry must contain unique paths from input_manifest.csv.")
   }
@@ -59,6 +59,15 @@ download_snapshot_inputs <- function(root, registry = NULL, check_only = FALSE) 
     })
   }
   invisible(missing)
+}
+
+# Optional archived outputs and interpretation forest are downloaded separately.
+# Sourcing defines this function; the call requests the additional snapshot.
+download_published_results <- function(root = getwd(), check_only = FALSE) {
+  download_snapshot_inputs(root,
+    registry = file.path(root,"R/permafrost/published_results_downloads.csv"),
+    check_only = check_only,
+    manifest = file.path(root,"R/permafrost/published_results_manifest.csv"))
 }
 
 if (sys.nframe() == 0L) {

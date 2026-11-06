@@ -26,6 +26,8 @@ run_permafrost <- local({
     "helpers.R" = "Defines package/input checks, manifests, masking, and stage records",
     "inputs.R" = "Defines raster alignment checks and predictor/polygon loading",
     "model.R" = "Defines random-forest fitting, holdout exports, and regional prediction",
+    "tables.R" = "Defines observed-row confusion tables and class metrics for the paper",
+    "external_maps.R" = "Defines the external probability-map comparison figure",
     "importance.R" = "Defines class-specific permutation importance and its figure",
     "partial_dependence.R" = "Defines probability refitting and partial-dependence curves",
     "mess.R" = "Defines continuous-predictor MESS and its map/histogram",

@@ -36,6 +36,9 @@ permafrost_config <- function(root, profile = c("publication", "quick"),
     training = p("data/permafrost/training/MineSitePermafrost_TetraTech_20170224.shp"),
     thermistors = p("data/permafrost/testing/YGS_PFT_LOCATIONS.CSV"),
     casino = p("data/permafrost/testing/casino_rast.tif"),
+    external_probability = p("data/permafrost/external",c(
+      "bonnaventure_2012_probability_coffee.tif","obu_2018_probability_coffee.tif")),
+    external_extent = p("data/permafrost/external/comparison_extent.csv"),
     # Compact GeoPackages can be built with prepare_permafrost.R.
     water = p("data/permafrost/context/waterbodies.gpkg"),
     streams = p("data/permafrost/context/watercourses.gpkg"),

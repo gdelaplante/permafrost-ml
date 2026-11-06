@@ -1,7 +1,8 @@
 # Sourcing this file defines the verifier; it does not start verification.
-verify_permafrost_inputs <- function(root = getwd(), available_only = FALSE) {
+verify_permafrost_inputs <- function(root = getwd(), available_only = FALSE, manifest = NULL) {
   root <- normalizePath(root, winslash = "/", mustWork = TRUE)
-  manifest <- utils::read.csv(file.path(root, "R/permafrost/input_manifest.csv"), stringsAsFactors = FALSE)
+  if (is.null(manifest)) manifest <- file.path(root, "R/permafrost/input_manifest.csv")
+  manifest <- utils::read.csv(manifest, stringsAsFactors = FALSE)
   paths <- file.path(root, manifest$path)
   missing <- manifest$path[!file.exists(paths)]
   if (length(missing) && !available_only) stop("Missing release inputs:\n", paste(missing, collapse="\n"),

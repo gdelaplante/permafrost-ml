@@ -18,7 +18,7 @@ source("R/permafrost/verify_inputs.R")
 verify_permafrost_inputs()
 ```
 
-The complete snapshot has **34 files totaling 4.93 GiB**. TIFFs and GeoPackages use Git LFS; the R downloader can also retrieve them without an LFS client. Existing real inputs are preserved. Keep shapefile companions and raster `.aux.xml` files, which contain geometry or metadata. [`input_manifest.csv`](R/permafrost/input_manifest.csv) records the exact files and checksums.
+The complete snapshot has **37 files totaling 4.93 GiB**. TIFFs and GeoPackages use Git LFS; the R downloader can also retrieve them without an LFS client. Existing real inputs are preserved. Keep shapefile companions and raster `.aux.xml` files, which contain geometry or metadata. [`input_manifest.csv`](R/permafrost/input_manifest.csv) records the exact files and checksums.
 
 ## Software and execution
 
@@ -64,6 +64,8 @@ The walkthrough explains each `source()` call where it occurs. Sourcing `permafr
 | `mess.R` | Nine-variable environmental similarity and its figure |
 | `validation.R` | Thermistor groups/metrics and Casino agreement |
 | `maps.R` | Regional and Casino comparison maps |
+| `tables.R` | Observed-row confusion matrices and class metrics for the paper |
+| `external_maps.R` | Native-grid external map clips and the four-panel comparison |
 | `hypsometric_map.R` | Standalone map of the processed hypsometric predictor |
 | `climate.R` | Station-normal/BIO1 comparison |
 | `pipeline.R` | Execution order and live objects passed between functions |
@@ -74,12 +76,13 @@ Read `pipeline.R` to follow the full calculation, then the corresponding module 
 
 | Paper component | Generated file or analysis |
 | --- | --- |
-| Table 2: holdout classification metrics | `holdout_by_class.csv`, `holdout_overall.csv`, `holdout_accuracy_definitions.csv` |
-| Table 3 and SI Table 1: confusion counts | `holdout_confusion.csv` (long format; explicit Prediction and Reference columns) |
+| Table 2: holdout classification metrics | `paper_table2_metrics.csv`, `paper_overall_metrics.csv` (plus detailed `holdout_*` diagnostics) |
+| Table 3 and SI Table 1: confusion counts | `paper_table3_proportions.csv`, `paper_SI_table1_counts.csv`; raw `holdout_confusion.csv` has explicit Prediction and Reference columns |
 | Figure 2: environmental similarity | `MESS_snow_hypso.tif`, `MESS_summary.csv`, `mess_publication_figure.png` |
 | Figure 3: Casino comparison | `casino_comparison_map_revised.png`, `casino_agreement.csv` |
 | Figure 4: regional predictions | `prediction_w_snow_hypso.tif`, `prediction_classes.csv`, `prediction_map.png` |
 | Figure 5: permutation importance | `Figure6_importance_w_snow+hypso.csv`, `Figure6_variable_importance_w_snow+hypso.png` |
+| Figure 7: external products, Coffee field map and prediction | `Figure7_external_comparison.png` and `.pdf` |
 | Figure 6: partial dependence | `Figure7_partial_dependence.csv`, `Figure7_PDP_w_snow+hypso.png` |
 | Thermistor validation | `thermistors_point_comparison.csv`, coverage/performance/confusion tables, and regional comparison PNG |
 | Climate comparison | `climate_comparison.csv` |
@@ -99,13 +102,32 @@ The standalone output is `data/permafrost/outputs/SI/FigureS3_hypsometric_predic
 
 ## Interpretation and reproducibility scope
 
-The model predicts ice-poor, ice-rich, permafrost-free, and very ice-rich ground. SAiVE supplies the spatial holdout partition; caret performs repeated cross-validation within its training portion. Tuning currently uses caret's default classification Accuracy. Overall accuracy is the proportion of correctly classified holdout observations. Class-specific sensitivity, specificity, and one-versus-rest balanced accuracy remain available separately; they are not the overall accuracy reported in the paper.
+The model predicts ice-poor, ice-rich, permafrost-free, and very ice-rich ground. SAiVE supplies the spatial holdout partition; caret performs repeated cross-validation within its training portion. Tuning currently uses caret's default classification Accuracy. Overall accuracy is the proportion of correctly classified holdout observations. The Accuracy row in the exported paper Table 2 uses ordinary one-versus-rest accuracy for each class, (true positives + true negatives) / all observations. Class-specific sensitivity, specificity, and one-versus-rest balanced accuracy remain available separately; they are not the overall accuracy reported in the paper.
 
 MESS uses nine continuous predictors, excluding vegetation. Permutation importance uses five shuffles per predictor and one-versus-rest balanced accuracy. Partial dependence uses a separately fitted probability forest when necessary, a class-balanced reference sample, and the central 2nd–98th percentile range for continuous predictors. Vegetation is evaluated at observed codes. See the [detailed methods and running instructions](R/permafrost/README.txt).
 
 The publication profile uses the reported sample and cross-validation settings and a recorded seed. It refits the model; the historical fit's random state was not archived, so exact agreement with its reported numerical results is not guaranteed. Each run records configuration, input/code checksums, package versions, stage times, and completion status.
 
-The maintained workflow starts from the supplied processed predictor grids. It does not reconstruct all raw DEM, radiation, curvature, or hypsometric preprocessing. Historical algorithm-comparison/sample-size experiments are retained as legacy code, but are not runnable end to end from this distribution. Figure 7's comparison with external regional permafrost maps and Figure 1's photographs/composite artwork are not generated by this workflow.
+The maintained workflow starts from the supplied processed predictor grids. It does not reconstruct all raw DEM, radiation, curvature, or hypsometric preprocessing. The historical algorithm-comparison code remains legacy material. The earlier sample-size experiment is supplied as a portable metric table, with its original testing denominators and confidence limits; it used the earlier predictor set and is distinct from the final fit. Figure 7 is reproduced from native-grid clips of the Bonnaventure and Obu probability products, the Coffee field map, and the MESS-filtered prediction. Source attribution and processing details are in [external_sources.txt](R/permafrost/external_sources.txt). Figure 1's photographs/composite artwork are not generated by this workflow.
+
+## Reproduce published figures without fitting a forest
+
+An optional **0.48 GiB** snapshot contains the archived prediction/MESS grids, the standalone interpretation probability forest, and portable numeric results. These files are separate from the inputs needed for a new model run. From the R console in the project root:
+
+```r
+source("R/permafrost/download_inputs.R") # Defines acquisition functions only.
+download_published_results()            # Materializes the optional LFS files.
+source("R/permafrost/verify_inputs.R")  # Defines the file verifier only.
+verify_permafrost_inputs(manifest = "R/permafrost/published_results_manifest.csv")
+source("R/permafrost/reproduce_published_figures.R") # Defines the figure runner.
+reproduce_published_figures()           # Writes to outputs/published_figures/.
+```
+
+This redraws Figures 4, 6, 7 and SI Figure 3, and regenerates Tables 2, 3 and SI Table 1 from explicitly labelled counts. Existing output directories are preserved: use a new `output_dir` for another run. No terminal or saved `spatPredict` result is used. Figure 4 distinguishes all 57 thermistors inside the raster extent: agreement, disagreement, unavailable MESS-filtered predictions, and undetermined observations.
+
+`final_holdout_confusion.csv` preserves caret's **Prediction-by-Reference** counts; the table exporter transposes them to **Observed-by-Predicted** and normalizes each observed row. The archived figures describe the historical fits. Importance/PDP interpretation used an additional 10,000-per-class model; the supplied probability forest contains 28,059 training records. `final_predictor_pdp.csv` records the regenerated curves, with radiation converted to kWh/m², snow duration in days, hypsometric position in metres, and vegetation as land-cover codes. A new full workflow uses its live fitted forest for interpretation and need not match these historical curves exactly.
+
+To recompute the archived PDP values rather than only redraw them, the portable caret probability model and its ordinary training data are supplied separately. This model can be loaded with `readRDS()`; the `spatPredict` result itself cannot. The detailed instructions include the complete R calls. The snapshot is versioned on GitHub; a DOI-bearing archival deposit has not yet been assigned.
 
 ## Data provenance and optional acquisition
 

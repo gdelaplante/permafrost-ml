@@ -33,6 +33,7 @@ fit_permafrost <- function(features, outcome, cfg) {
   utils::write.csv(data.frame(
     metric = "Overall accuracy", value = unname(perf$overall["Accuracy"])),
     output_file(cfg, "holdout_accuracy_definitions.csv"), row.names = FALSE)
+  export_confusion_tables(perf$table, cfg$output_dir)
   writeLines(capture.output(print(res$best_model), print(perf)),
              output_file(cfg, "model_report.txt"))
   res

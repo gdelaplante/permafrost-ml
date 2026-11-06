@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this workflow, cite the associated manuscript and identify the repository commit used."
+type: software
+title: "Extending High-Resolution Field Permafrost Mapping by Random Forest: An example in the Dawson Range"
+authors:
+  - family-names: "de Laplante"
+    given-names: "Ghislain T."
+  - family-names: "Skierszkan"
+    given-names: "Elliott K."
+  - family-names: "Bataille"
+    given-names: "Cl\u00e9ment P."
+repository-code: "https://github.com/gdelaplante/permafrost-ml"
+url: "https://github.com/gdelaplante/permafrost-ml"
+license: MIT
+abstract: "R workflow for permafrost classification in the Dawson Range, Yukon. Software is MIT-licensed; scientific input products retain their source attributions and terms."

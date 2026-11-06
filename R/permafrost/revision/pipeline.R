@@ -91,6 +91,7 @@ run_pipeline <- function(cfg, stages, check_only = FALSE, checksums = TRUE) {
     plot_prediction_map(cfg)
     plot_casino_map(cfg)
     plot_hypsometric_predictor(cfg$root, cfg$output_dir)
+    plot_external_comparison(cfg)
   })
   if ("climate" %in% stages) result$climate <- run_stage("climate", cfg, compare_climate(cfg))
   success <- TRUE

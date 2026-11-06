@@ -1,0 +1,27 @@
+External permafrost products used in Figure 7
+
+Bonnaventure PP, Lewkowicz AG, Kremer M, Sawada MC (2012). A Permafrost
+Probability Model for the Southern Yukon and Northern British Columbia, Canada.
+Permafrost and Periglacial Processes 23:52-68. https://doi.org/10.1002/ppp.1731
+Provider and access point: https://data.geology.gov.yk.ca/permafrost
+Original file: YukonPermafrostProbabilityModel.tif (30 m; NAD83 Albers).
+
+Obu J, Westermann S, Kaab A, Bartsch A (2018). Ground Temperature Map,
+2000-2016, Northern Hemisphere Permafrost. PANGAEA dataset; updated 2019-04-01.
+https://doi.org/10.1594/PANGAEA.888600
+Product: Permafrost Probability Fraction, version 5.0, 2018-11-28.
+Original file: UiO_PEX_PERPROB_5.0_20181128_2000_2016_NH.tif.
+Native pixel spacing is approximately 927 m in EPSG:3995, described as 1 km in
+the product documentation. License: Creative Commons Attribution 3.0 Unported.
+Full upstream download:
+https://store.pangaea.de/Publications/ObuJ-etal_2018/UiO_PEX_PERPROB_5.0_20181128_2000_2016_NH.zip
+
+The supplied TIFFs are compact clips of the original products. Their native grids
+and values are preserved; no value reclassification was applied. The comparison
+extent is the Coffee training-map bounding box plus 5 km in EPSG:3579, recorded
+in comparison_extent.csv. prepare_external_comparison() recreates these clips
+when given the original TIFFs. The plotting function reprojects the clips for
+display at 30 m and 1000 m respectively with nearest-neighbour interpolation.
+The external products show permafrost occurrence probability. The field and random
+forest maps show ground ice classes. This is a qualitative comparison, not an
+accuracy benchmark or conversion between those different quantities.

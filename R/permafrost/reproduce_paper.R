@@ -65,3 +65,10 @@ read.csv(file.path(output_dir, "thermistors_performance_by_region.csv"))
 # Optional: regenerate maps/validation from existing GeoTIFFs without refitting.
 # maps <- run_permafrost(stages = c("validation", "maps"), raster_dir = output_dir,
 #   output_dir = file.path(project_root, "data/permafrost/outputs/maps_2"))
+
+# Optional: regenerate published figures without a new model fit.
+# The first source defines acquisition functions; the second defines the figure runner.
+# source("R/permafrost/download_inputs.R")
+# download_published_results(project_root)
+# source("R/permafrost/reproduce_published_figures.R")
+# reproduce_published_figures(project_root)

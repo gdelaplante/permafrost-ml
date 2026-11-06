@@ -1,0 +1,4 @@
+path,download_url,note
+data/permafrost/published_results/interpretation_probability_model.rds,https://media.githubusercontent.com/media/gdelaplante/permafrost-ml/7c3555e2485ad8fa597a42f17dc84d7ea1f24620/data/permafrost/published_results/interpretation_probability_model.rds,Optional archived publication output; fixed snapshot and recorded checksum
+data/permafrost/published_results/MESS_snow_hypso.tif,https://media.githubusercontent.com/media/gdelaplante/permafrost-ml/7c3555e2485ad8fa597a42f17dc84d7ea1f24620/data/permafrost/published_results/MESS_snow_hypso.tif,Optional archived publication output; fixed snapshot and recorded checksum
+data/permafrost/published_results/prediction_w_snow_hypso.tif,https://media.githubusercontent.com/media/gdelaplante/permafrost-ml/7c3555e2485ad8fa597a42f17dc84d7ea1f24620/data/permafrost/published_results/prediction_w_snow_hypso.tif,Optional archived publication output; fixed snapshot and recorded checksum

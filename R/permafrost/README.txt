@@ -17,7 +17,7 @@ No command-line execution is required. From the R console at the repository root
   source("R/permafrost/verify_inputs.R")   # Defines the verifier only.
   verify_permafrost_inputs()              # Checks every required file.
 
-input_manifest.csv records 34 required files (4.93 GiB), including shapefile
+input_manifest.csv records 37 required files (4.93 GiB), including shapefile
 companions and raster auxiliary metadata. Scientific input bytes are preserved
 without automatic line-ending conversion. Unmaterialized LFS pointers are detected.
 Use available_only=TRUE with the verifier only when diagnosing a partial checkout.
@@ -153,9 +153,9 @@ Portable outputs include GeoTIFFs, training/testing sample CSVs and sample_crs.w
 fitted_model.rds, and probability_model.rds. The small synthetic smoke test checks
 these computational paths; its results are not estimates of study performance.
 
-The maintained workflow does not reproduce the historical multi-algorithm comparison,
-sample-size search, raw GIS preprocessing, or the external-map comparison in paper
-Figure 7. legacy/ contains historical code for context, not a complete reproduction
+The maintained workflow does not rerun the historical multi-algorithm comparison or
+raw GIS preprocessing. The earlier sample-size statistics are supplied as portable
+CSV data, and Figure 7 is reproduced by revision/external_maps.R. legacy/ contains historical code for context, not a complete reproduction
 of those experiments. Photograph/composite artwork also lies outside this workflow.
 
 Optional data preparation
@@ -188,3 +188,46 @@ Those sources only define functions in a common analysis environment; none start
 sampling, fitting, download, or plotting. pipeline.R calls these functions in scientific
 execution order. Separate modules keep the individual methods readable; the IDE
 walkthrough explains the three public utility/entry-point sources inline.
+
+
+Published results and figure reproduction
+
+reproduce_published_figures.R defines an optional figure runner. Its source() call
+loads the documented analysis definitions locally; it does not fit a forest. The
+runner reads the optional archived grids and figure data, produces the corrected
+paper tables, and redraws Figures 4, 6, 7 and SI Figure 3. Its default directory is
+data/permafrost/outputs/published_figures. Use a new empty output_dir for reruns.
+Paper Table 2 reports ordinary one-versus-rest class accuracy, (TP + TN) / N,
+with overall multiclass accuracy in paper_overall_metrics.csv. Table 3 uses
+observed rows and predicted columns, normalized by the observed-row total.
+The 0.48 GiB optional archive is acquired with download_published_results() from
+download_inputs.R and verified against published_results_manifest.csv. Core input
+verification remains separate; a new fit does not require the archived outputs.
+
+For the historical interpretation model, ordinary caret/ranger objects are portable:
+  source("R/permafrost/permafrost_model_revision.R") # Defines the runner/modules.
+  m <- environment(run_permafrost)$modules
+  model <- readRDS("data/permafrost/published_results/interpretation_probability_model.rds")
+  training <- model$trainingData
+  training <- training[, c(".outcome", setdiff(names(training), ".outcome"))]
+  cfg <- m$permafrost_config(getwd(), output_dir = "data/permafrost/outputs/recomputed_pdp")
+  dir.create(cfg$output_dir, recursive = TRUE, showWarnings = FALSE)
+  m$plot_partial_dependence(list(best_model = model, training = training), cfg)
+
+This uses the archived probability forest and its 28,059 training records; no terra
+external pointer is loaded or dereferenced. The reference sample is class-balanced,
+while continuous predictor grid quantiles use the full training data. The separate
+draw_partial_dependence() function accepts the exported CSV to alter presentation
+without recomputing predictions. The historical interpretation fit used a smaller
+sample than the reported final classification fit; newly fitted interpretation
+outputs can therefore differ as well as differing through random state.
+
+The sample-size table historical_sample_size.csv records an earlier exploratory
+experiment using total radiation and mean curvature in addition to the original
+predictors; it did not include snow duration or hypsometric position. Testing
+denominators are retained because the spatial partitions differ between runs.
+Its binomial confidence intervals describe test accuracy, not variability across
+repeated fits.
+
+The public snapshot has stable commit URLs and checksums. A DOI for the publication archive will be added after deposit in the selected
+repository.

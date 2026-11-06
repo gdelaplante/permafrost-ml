@@ -65,19 +65,6 @@ plot_partial_dependence <- function(res, cfg) {
     )
   }
 
-  display_names <- c(
-    DEM = "Elevation (m)",
-    dirrad = "Direct solar radiation (kWh/m\u00b2)",
-    profcurv = "Profile curvature (1/m)",
-    snow = "Snow-cover duration",
-    hypso = "Hypsometric position",
-    aspect = "Aspect (\u00b0)",
-    difrad = "Diffuse solar radiation (kWh/m\u00b2)",
-    tancurv = "Tangential curvature (1/m)",
-    slope = "Slope (\u00b0)",
-    veg = "Vegetation"
-  )
-
   # 4. Sample reference observations ----------------------------
   # Balanced sample of up to 1,000 observations per class.
   # This reduces the cost of marginal predictions.
@@ -133,6 +120,27 @@ plot_partial_dependence <- function(res, cfg) {
   # Heads up: expect this to take a good long while to complete. You should see informative messages when each predictor is done.
   pdp_df <- do.call(rbind, pdp_list)
 
+  write.csv(pdp_df, output_file(cfg, "Figure7_partial_dependence.csv"), row.names = FALSE)
+  saveRDS(pdp_model, output_file(cfg, "probability_model.rds"))
+  draw_partial_dependence(pdp_df, cfg$output_dir, pdp_vars)
+  invisible(pdp_df)
+}
+
+# Source this file to define both functions. This function redraws a saved CSV
+# without a model fit, terra objects, or recomputing marginal predictions.
+draw_partial_dependence <- function(pdp_df, output_dir,
+  pdp_vars = c("aspect", "DEM", "difrad", "dirrad", "profcurv", "tancurv",
+               "slope", "veg", "snow", "hypso")) {
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  if (is.character(pdp_df) && length(pdp_df) == 1L) pdp_df <- read.csv(pdp_df)
+  stopifnot(all(c("predictor", "value", "class", "mean_prob") %in% names(pdp_df)))
+  display_names <- c(DEM = "Elevation (m)",
+    dirrad = "Direct solar radiation (kWh/m\u00b2)",
+    profcurv = "Profile curvature (1/m)", snow = "Snow-cover duration (days)",
+    hypso = "Hypsometric position (m)", aspect = "Aspect (\u00b0)",
+    difrad = "Diffuse solar radiation (kWh/m\u00b2)",
+    tancurv = "Tangential curvature (1/m)", slope = "Slope (\u00b0)",
+    veg = "Vegetation (land-cover code)")
   # 6. Format class and predictor labels ------------------------
 
   class_labels <- c(
@@ -210,15 +218,15 @@ plot_partial_dependence <- function(res, cfg) {
   # 8. Save results ---------------------------------------------
 
   ggplot2::ggsave(
-    output_file(cfg, "Figure7_PDP_w_snow+hypso.png"),
+    file.path(output_dir, "Figure7_PDP_w_snow+hypso.png"),
     p,
-    width = 12,
-    height = 16,
+    width = 9,
+    height = 13,
     dpi = 450,
     bg = "white"
   )
 
-  write.csv(pdp_df, output_file(cfg, "Figure7_partial_dependence.csv"), row.names = FALSE)
-  saveRDS(pdp_model, output_file(cfg, "probability_model.rds"))
-  invisible(pdp_df)
+  ggplot2::ggsave(file.path(output_dir, "Figure7_PDP_w_snow+hypso.pdf"),
+    p, width = 9, height = 13, bg = "white")
+  invisible(p)
 }
