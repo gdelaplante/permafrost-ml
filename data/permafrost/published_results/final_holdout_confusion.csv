@@ -1,0 +1,17 @@
+Prediction,Reference,Freq
+Ice-poor,Ice-poor,20707
+Ice-poor,Ice-rich,1356
+Ice-poor,Very Ice-rich,1
+Ice-poor,Unfrozen,730
+Ice-rich,Ice-poor,1939
+Ice-rich,Ice-rich,21595
+Ice-rich,Very Ice-rich,523
+Ice-rich,Unfrozen,840
+Very Ice-rich,Ice-poor,13
+Very Ice-rich,Ice-rich,183
+Very Ice-rich,Very Ice-rich,22367
+Very Ice-rich,Unfrozen,256
+Unfrozen,Ice-poor,1104
+Unfrozen,Ice-rich,667
+Unfrozen,Very Ice-rich,625
+Unfrozen,Unfrozen,22556

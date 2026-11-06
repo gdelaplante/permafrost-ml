@@ -6,6 +6,9 @@ data/permafrost/context/boundary.gpkg,196608,e82b71c85e64d738f310674a936b2442,Gi
 data/permafrost/context/glacial_limits.gpkg,303104,e1b01a72fbca487c793d97baf439c42e,Git LFS
 data/permafrost/context/waterbodies.gpkg,9920512,8583b28048646c70dd853b36c79fd347,Git LFS
 data/permafrost/context/watercourses.gpkg,32432128,41b9219bb2764d24b30d608ee6d9a023,Git LFS
+data/permafrost/external/bonnaventure_2012_probability_coffee.tif,1241232,74ca2d7de111f193a0eb90e8b4aa589c,Git LFS
+data/permafrost/external/comparison_extent.csv,132,4474e97318d113a70109e6132fcc1e3e,Git
+data/permafrost/external/obu_2018_probability_coffee.tif,5162,0c77d4e0912fc198ea8527cd7d9cdcc1,Git LFS
 data/permafrost/predvars/Aspect.tif,443205882,4e3918049691e723cee5b14ede6b705a,Git LFS
 data/permafrost/predvars/Aspect.tif.aux.xml,2789,e963fbd3be2c28efc0c8a125399bcf5a,Git
 data/permafrost/predvars/DEMClipped.tif,118455722,648a4445568cd4943505dee18845ce01,Git LFS

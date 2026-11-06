@@ -1,0 +1,84 @@
+> res
+$training
+ class       : SpatVector 
+ geometry    : points 
+ dimensions  : 224538, 11  (geometries, attributes)
+ extent      : 147079.5, 160146.4, 945652.9, 954134.2  (xmin, xmax, ymin, ymax)
+ coord. ref. : NAD83(CSRS) / Yukon Albers (EPSG:3579) 
+ names       :     Type aspect   DEM    difrad    dirrad  profcurv    tancurv slope   veg  snow hypso
+ type        :   <fact>  <num> <int>     <num>     <num>     <num>      <num> <num> <int> <num> <num>
+ values      : Unfrozen  123.6  1287 2.508e+05 5.786e+05  5.67e-05 -0.0002713 8.733    18 223.4 15.74
+               Unfrozen  123.6  1287 2.508e+05 5.786e+05  5.67e-05 -0.0002713 8.733    18 223.4 15.74
+               Unfrozen    114  1290 2.513e+05 5.652e+05 0.0001236 -0.0001332 7.777    18 225.9 15.46
+
+$testing
+ class       : SpatVector 
+ geometry    : points 
+ dimensions  : 95462, 11  (geometries, attributes)
+ extent      : 147102.1, 160148.9, 945631.9, 954132.2  (xmin, xmax, ymin, ymax)
+ coord. ref. : NAD83(CSRS) / Yukon Albers (EPSG:3579) 
+ names       :     Type aspect   DEM    difrad    dirrad profcurv  tancurv slope   veg  snow hypso
+ type        :   <fact>  <num> <int>     <num>     <num>    <num>    <num> <num> <int> <num> <num>
+ values      : Ice-poor  179.2   956 2.183e+05 6.737e+05 0.006397 0.002057 27.22     1   202 151.1
+               Ice-poor  179.2   956 2.183e+05 6.737e+05 0.006397 0.002057 27.22     1   202 151.1
+               Ice-poor  179.2   956 2.183e+05 6.737e+05 0.006397 0.002057 27.22     1   202 151.1
+
+$selected_method
+[1] "ranger"
+
+$best_model
+Random Forest 
+
+224538 samples
+    10 predictor
+     4 classes: 'Ice-poor', 'Ice-rich', 'Unfrozen', 'Very Ice-rich' 
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 10 times) 
+Summary of sample sizes: 202084, 202083, 202083, 202083, 202084, 202086, ... 
+Resampling results across tuning parameters:
+
+  mtry  splitrule   Accuracy   Kappa    
+   2    gini        0.9563027  0.9417360
+   2    extratrees  0.9563410  0.9417872
+   6    gini        0.9591588  0.9455441
+   6    extratrees  0.9602384  0.9469837
+  10    gini        0.9561967  0.9415945
+  10    extratrees  0.9614929  0.9486564
+
+Tuning parameter 'min.node.size' was held constant at a value of 1
+Accuracy was used to select the optimal model using the largest value.
+The final values used for the model were mtry = 10, splitrule = extratrees and min.node.size = 1.
+
+$selected_model_performance
+Confusion Matrix and Statistics
+
+               Reference
+Prediction      Ice-poor Ice-rich Unfrozen Very Ice-rich
+  Ice-poor         20707     1356      730             1
+  Ice-rich          1939    21595      840           523
+  Unfrozen          1104      667    22556           625
+  Very Ice-rich       13      183      256         22367
+
+Overall Statistics
+                                          
+               Accuracy : 0.9137          
+                 95% CI : (0.9119, 0.9155)
+    No Information Rate : 0.2554          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.8849          
+                                          
+ Mcnemar's Test P-Value : < 2.2e-16       
+
+Statistics by Class:
+
+                     Class: Ice-poor Class: Ice-rich Class: Unfrozen Class: Very Ice-rich
+Sensitivity                   0.8714          0.9073          0.9251               0.9511
+Specificity                   0.9709          0.9539          0.9663               0.9937
+Pos Pred Value                0.9084          0.8674          0.9040               0.9802
+Neg Pred Value                0.9579          0.9687          0.9741               0.9842
+Prevalence                    0.2489          0.2493          0.2554               0.2463
+Detection Rate                0.2169          0.2262          0.2363               0.2343
+Detection Prevalence          0.2388          0.2608          0.2614               0.2390
+Balanced Accuracy             0.9211          0.9306          0.9457               0.9724

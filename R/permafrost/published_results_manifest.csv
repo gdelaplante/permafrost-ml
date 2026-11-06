@@ -1,0 +1,9 @@
+path,bytes,md5,storage
+data/permafrost/published_results/Figure6_importance_w_snow+hypso.csv,3732,bc46c6aa50c7e9e31fdaecd6572afef5,Git
+data/permafrost/published_results/final_holdout_confusion.csv,443,eb858710865a478a28b96e4fe3c5152e,Git
+data/permafrost/published_results/final_predictor_pdp.csv,72987,610ea7d899b616c9ab3a5f15e2e38055,Git
+data/permafrost/published_results/historical_sample_size.csv,1732,22053a91b4e31e8c46537ca09d074a01,Git
+data/permafrost/published_results/interpretation_probability_model.rds,35916845,943917f525710d166ccc983241ea8e54,Git LFS
+data/permafrost/published_results/MESS_snow_hypso.tif,451747825,46cc421030a098a25111a6360cddb498,Git LFS
+data/permafrost/published_results/prediction_w_snow_hypso.tif,31129668,a741e50cca796ee17bc746a2d197c243,Git LFS
+data/permafrost/published_results/result_w_snow+hypso.txt,4084,a77b1b56010a288fd310d4268af9ee29,Git
