@@ -1,6 +1,6 @@
 # Extending high resolution field permafrost mapping by random forest
 
-R code and analysis inputs for the Dawson Range permafrost mapping study. The workflow uses the Coffee Gold Project field map to train four ground-condition classes, predicts their regional distribution, and evaluates predictions using environmental similarity, the Casino reference map, and YGS thermistor observations.
+R code and analysis inputs for the Dawson Range, Yukon Territory, Canada permafrost mapping study. The workflow uses the Coffee Gold Project field map to train four ground-condition classes, predicts their regional distribution, and evaluates predictions using environmental similarity, the Casino reference map, and YGS thermistor observations.
 
 ## Obtain the code and inputs
 

@@ -1,4 +1,4 @@
-# Reproduce the Dawson Range permafrost analysis in RStudio, VSCode, or Positron.
+# Reproduce the Dawson Range, Yukon Territory, Canada permafrost analysis in RStudio, VSCode, or Positron.
 # Open permafrost-ml.Rproj (or set the IDE working directory to this repository).
 # Run the numbered sections in order using the IDE's Run/Send Selection command.
 # Running the entire file executes the selected analysis profile.
