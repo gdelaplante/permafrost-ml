@@ -2,7 +2,7 @@ External permafrost products used in Figure 7
 
 Bonnaventure PP, Lewkowicz AG, Kremer M, Sawada MC (2012). A Permafrost
 Probability Model for the Southern Yukon and Northern British Columbia, Canada.
-Permafrost and Periglacial Processes 23:52-68. https://doi.org/10.1002/ppp.1731
+Permafrost and Periglacial Processes 23:52-68. https://doi.org/10.1002/ppp.1733
 Provider and access point: https://data.geology.gov.yk.ca/permafrost
 Original file: YukonPermafrostProbabilityModel.tif (30 m; NAD83 Albers).
 
